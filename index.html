@@ -151,12 +151,6 @@
       .welcome-wrapper { padding:24px 16px 40px; }
     }
 
-    /* Auth Overlays */
-    #auth-overlay { position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; font-family:var(--font-head); }
-    .spinner { width:50px; height:50px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: helixSpin 1s linear infinite; }
-    .auth-toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#1a2332; color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; transition:transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index:11000; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
-    .auth-toast.show { transform:translateX(-50%) translateY(0); }
-
     /* ===== PANEL SCREENS ===== */
     .panel-screen {
       background: #fff;
@@ -2401,15 +2395,20 @@
         </div>
       </div>
 
+      <!-- Footer -->
+      <div class="entry-footer">
+        <p>Faculty of Biotechnology · Prototyping Lab · MSA University</p>
+      </div>
+
     </div>
   </div>
 
   <!-- Auth Loading Overlay -->
-  <div id="auth-overlay">
-    <div class="spinner"></div>
+  <div id="auth-overlay" style="position:fixed;inset:0;background:rgba(255,255,255,0.95);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:var(--font-head);">
+    <div style="width:50px;height:50px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:helixSpin 1s linear infinite;"></div>
     <div id="auth-status-text">Verifying Laboratory Credentials...</div>
   </div>
-  <div id="auth-toast" class="auth-toast"></div>
+  <div id="auth-toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#1a2332;color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;transition:transform 0.4s cubic-bezier(0.18,0.89,0.32,1.28);z-index:11000;box-shadow:0 10px 30px rgba(0,0,0,0.3);"></div>
 
   <!-- ===== INTRO ===== -->
   <div id="screen-intro" class="screen">
@@ -2900,19 +2899,24 @@
   </div>
 
   <!-- ===== CLINICAL TREATMENT PANEL ===== -->
-  <script type="module">
-    import { validateStudentPin, logSimulationAttempt, syncStudentProgress, captureSessionContext } from './firebase_config.js';
+  <script>
+    // TEMPORARY ERROR REPORTER - REMOVE AFTER DEBUGGING
+    window.onerror = function (msg, src, line, col, err) {
+      document.title = 'JS_ERR:L' + line + ':' + msg;
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:99999;font-size:16px;font-family:monospace;white-space:pre-wrap';
+      d.textContent = 'ERROR at line ' + line + ': ' + msg;
+      document.body?.appendChild(d) || document.addEventListener('DOMContentLoaded', () => document.body.appendChild(d));
+      return false;
+    };
     // =====================================================================
     // STATE
     // =====================================================================
-    const state = {
-      userUid: null,
-      studentName: '',
-      currentSessionDocId: null,
-      sessionContext: {},
-      _diagnosisRT: 0,
-      _diagnosisStartTime: 0,
-      _sliderAdjustments: 0,
+    let state = {
+      // === Firebase Auth & Telemetry ===
+      userUid: null, studentName: '', currentSessionDocId: null,
+      _sliderAdjustments: 0, _diagnosisRT: 0, _diagnosisStartTime: 0,
+      // === Original State ===
       running: false, stage: 0, recoveryMode: false, time: 60,
       membrane: 80, atp: 90, ion: 70, viability: 85,
       params: { perm: 50, na: 50, k: 50, ca: 30, ef: 0, pd: 0, temp: 37, ph: 7.4, tp: 60 },
@@ -5425,14 +5429,53 @@
         }
       }
     }
-    function startEntry() {
+    async function startEntry() {
       const nm = document.getElementById('input-name').value.trim();
-      const id = document.getElementById('input-id').value.trim();
-      state.userName = nm || 'Researcher';
-      state.userId = id || 'LAB-001';
-      showScreen('intro');
-      document.getElementById('case-dock').style.display = 'flex';
-      updateDock(-1); // Initialize dock with lock states, no active case yet
+      const pin = document.getElementById('input-pin').value.trim();
+
+      if (!nm || !pin) {
+        _showToast('Please enter both your Full Name and Secure Access PIN.');
+        return;
+      }
+
+      _showAuthOverlay('Verifying Laboratory Credentials...');
+
+      try {
+        const { validateStudentPin, activateStudent } = await import('./firebase_config.js');
+        const result = await validateStudentPin(pin);
+
+        if (result.status === 'NEW') {
+          // First-time PIN — activate student
+          const activated = await activateStudent(pin, {
+            studentName: nm,
+            university: document.getElementById('input-university')?.value.trim() || '',
+            faculty: document.getElementById('input-faculty')?.value.trim() || '',
+            department: document.getElementById('input-department')?.value.trim() || '',
+            course: document.getElementById('input-course')?.value.trim() || '',
+            courseCode: document.getElementById('input-course-code')?.value.trim() || '',
+          });
+          state.userUid = activated.uid;
+        } else {
+          // Returning student
+          state.userUid = result.studentId;
+        }
+
+        state.userName = nm;
+        state.userId = pin;
+        _hideAuthOverlay();
+        showScreen('intro');
+        document.getElementById('case-dock').style.display = 'flex';
+        updateDock(-1);
+      } catch (err) {
+        _hideAuthOverlay();
+        if (err.message === 'INVALID_PIN') {
+          _showToast('Invalid PIN. Please check your access code.');
+        } else if (err.message === 'LIMIT_EXCEEDED') {
+          _showToast('Trial limit reached. Contact your instructor.');
+        } else {
+          _showToast(err.message || 'Authentication failed.');
+        }
+      }
     }
 
     function showCaseIntro() { selectCase(0); }
@@ -5545,24 +5588,30 @@
 
     async function beginSimulation() {
       if (state.running) return;
-      
-      // Reset Clinical Metrics
+
+      // Reset telemetry counters
       state._sliderAdjustments = 0;
       state._diagnosisRT = 0;
+      state._diagnosisStartTime = 0;
 
-      // Log Attempt to Firebase
-      try {
-        const sessionDocId = await logSimulationAttempt(state.userUid, {
-          caseIndex: state.stage,
-          caseTitle: STAGES[state.stage].title,
-          startTime: new Date().toISOString(),
-          ...state.sessionContext
-        });
-        state.currentSessionDocId = sessionDocId;
-        
-        state.running = true;
-        state.time = STAGES[state.stage]?.duration || 60;
-        state._startTime = Date.now();
+      // Log attempt to Firebase
+      if (state.userUid) {
+        try {
+          const { logSimulationAttempt } = await import('./firebase_config.js');
+          await logSimulationAttempt(state.userUid, {
+            caseIndex: state.stage,
+            caseTitle: STAGES[state.stage]?.title || '',
+            startTime: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            screenRes: `${screen.width}x${screen.height}`,
+            variant: state._activeVariant?.id || 'standard'
+          });
+        } catch (e) { console.warn('Firebase log failed:', e); }
+      }
+
+      state.running = true;
+      state.time = STAGES[state.stage]?.duration || 60;
+      state._startTime = Date.now();
       // Case 00 Normal phase (stage 0, phase 1) should be UNLOCKED (phase 3). 
       // All other clinical cases start in Observation (phase 1).
       state._clinicalPhase = 1; 
@@ -5741,6 +5790,7 @@
     // CONTROLS
     // =====================================================================
     function updateCtrl(key, val) {
+      state._sliderAdjustments++;
       const inputs = document.querySelectorAll('input[type=range]');
       const now = Date.now();
       const obsWindow = 5000; // 5-second observation phase
@@ -5966,7 +6016,6 @@
       state.simInterval = setInterval(gameTick, 1000);
       if (state.logInterval) clearInterval(state.logInterval);
       state.logInterval = setInterval(periodicLog, 7000);
-      logTelemetry('session_start', { sessionId: state.sessionId, stage: state.stage });
     }
 
     function gameTick() {
@@ -6072,7 +6121,7 @@
           stabMult = 0.15 + 0.85 * (timeSinceSlider / STABILIZE_MS); // 15% → 100% over 3s
         }
 
-        // ── Gradual Ramp-Up: drift starts weak after alert, builds over 5s ══
+        // ── Gradual Ramp-Up: drift starts weak after alert, builds over 5s ──
         const timeSinceAlert = Date.now() - (state._alertFiredTime || 0);
         const RAMP_MS = 5000;
         const rampMult = Math.min(1.0, timeSinceAlert / RAMP_MS);
@@ -6279,7 +6328,6 @@
       clearInterval(state.simInterval);
       clearInterval(state.logInterval);
       setRecovery(false);
-      logTelemetry('simulation_end', { sessionId: state.sessionId, stage: state.stage, score: state.continuousScore });
       addLog('⏱ TIME EXPIRED — Simulation frozen. Calculating results...', 'warn');
       setTimeout(() => showScoreScreen(), 800);
     }
@@ -6564,6 +6612,7 @@
     }
 
     function showDiagnosisQuestion(qIdx = -1) {
+      state._diagnosisStartTime = Date.now();
       const variant = state._activeVariant;
       if (!variant) return;
 
@@ -6814,23 +6863,23 @@
       state.running = false;
       clearInterval(state.simInterval); clearInterval(state.logInterval);
       state.stagesCompleted = state.stage + 1;
-      
-      // Sync full clinical results to session
-      const snapshot = calculateFinalScore();
-      syncStudentProgress(state.userUid, state.currentSessionDocId, {
-        caseIndex: state.stage,
-        score: snapshot.total,
-        details: {
-          ...snapshot,
-          sliderAdjustments: state._sliderAdjustments,
-          diagnosisRT: state._diagnosisRT,
-          finalATP: state.atp,
-          finalViability: state.viability,
-          finalMembrane: state.membrane,
-          finalIon: state.ion,
-          variant: state._activeVariant?.id || 'standard'
-        }
-      });
+
+      // Sync progress to Firebase
+      if (state.userUid) {
+        import('./firebase_config.js').then(({ syncStudentProgress }) => {
+          syncStudentProgress(state.userUid, {
+            caseIndex: state.stage,
+            score: state.score.total || state.continuousScore || 0,
+            isComplete: true,
+            sliderAdjustments: state._sliderAdjustments,
+            diagnosisRT: state._diagnosisRT,
+            finalATP: Math.round(state.atp),
+            finalViability: Math.round(state.viability),
+            finalMembrane: Math.round(state.membrane),
+            variant: state._activeVariant?.id || 'standard'
+          });
+        }).catch(e => console.warn('Firebase sync failed:', e));
+      }
 
       const s = STAGES[state.stage];
       document.getElementById('trans-tag').textContent = `Stage ${state.stage + 1} / ${STAGES.length} — Complete`;
@@ -11152,51 +11201,23 @@
       selectCase(0);
       showScreen('entry'); // Ensure we start at entry
     });
-    // ── Global Handlers for Auth ──
-    window.startEntry = startEntry;
-
-    async function startEntry() {
-      const name = document.getElementById('input-name').value.trim();
-      const pin = document.getElementById('input-pin').value.trim();
-
-      if (!name || !pin) {
-        showToast('Please enter both your Full Name and Secure Access PIN.');
-        return;
-      }
-
-      showAuthOverlay('Verifying Laboratory Credentials...');
-
-      try {
-        const { validateStudentPin, captureSessionContext } = await import('./firebase_config.js');
-        const studentData = await validateStudentPin(pin, name);
-        state.userUid = studentData.uid;
-        state.studentName = name;
-        
-        state.sessionContext = await captureSessionContext();
-        
-        hideAuthOverlay();
-        document.getElementById('screen-entry').classList.remove('active');
-        document.getElementById('screen-intro').classList.add('active');
-      } catch (err) {
-        hideAuthOverlay();
-        showToast(err.message || 'Authentication Failed.');
-      }
+    // ── Firebase Auth Helper Functions ──
+    function _showAuthOverlay(text) {
+      const el = document.getElementById('auth-overlay');
+      if (el) { el.style.display = 'flex'; }
+      const txt = document.getElementById('auth-status-text');
+      if (txt) { txt.textContent = text; }
     }
-
-    function showAuthOverlay(text) {
-      document.getElementById('auth-overlay').style.display = 'flex';
-      document.getElementById('auth-status-text').textContent = text;
+    function _hideAuthOverlay() {
+      const el = document.getElementById('auth-overlay');
+      if (el) { el.style.display = 'none'; }
     }
-
-    function hideAuthOverlay() {
-      document.getElementById('auth-overlay').style.display = 'none';
-    }
-
-    function showToast(msg) {
+    function _showToast(msg) {
       const t = document.getElementById('auth-toast');
+      if (!t) { alert(msg); return; }
       t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
+      t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(100px)'; }, 3000);
     }
   </script>
 </body>
