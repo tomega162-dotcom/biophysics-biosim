@@ -2373,54 +2373,6 @@
             </div>
           </div>
 
-          <!-- Email -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Email</div>
-              <input class="field-input" id="input-email" type="email" placeholder="Enter your email..." autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Group -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Group</div>
-              <input class="field-input" id="input-group" type="text" placeholder="Enter your group (e.g. A1, B2)..." autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Year of Study -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Year of Study</div>
-              <input class="field-input" id="input-year" type="text" placeholder="Enter year (e.g. 1st, 2nd, 3rd)..." autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Campus -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Campus</div>
-              <input class="field-input" id="input-campus" type="text" placeholder="Enter campus name..." autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Building -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Building</div>
-              <input class="field-input" id="input-building" type="text" placeholder="Enter building name..." autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Lab Room -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Lab Room</div>
-              <input class="field-input" id="input-labroom" type="text" placeholder="Enter lab room number..." autocomplete="off">
-            </div>
-          </div>
-
           <!-- Secure Access PIN (BIN) -->
           <div class="entry-info-item">
             <div class="field-group">
@@ -2943,7 +2895,7 @@
     </div>
   </div>
 
-  <!-- BioSim Firebase REST Integration — bypasses SDK auth issues -->
+  <!-- BioSim Firebase REST Integration v2 — Organized Schema -->
   <script>
     (function() {
       const PROJECT = 'biosim-laboratory';
@@ -2951,82 +2903,116 @@
       const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
       // ── Firestore value helpers ──
-      function toFirestoreValue(v) {
+      function toFV(v) {
         if (v === null || v === undefined) return { nullValue: null };
         if (typeof v === 'boolean') return { booleanValue: v };
         if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
         if (typeof v === 'string') return { stringValue: v };
         if (v instanceof Date) return { timestampValue: v.toISOString() };
-        if (Array.isArray(v)) return { arrayValue: { values: v.map(toFirestoreValue) } };
+        if (Array.isArray(v)) return { arrayValue: { values: v.map(toFV) } };
         if (typeof v === 'object') {
-          const fields = {};
-          for (const [k, val] of Object.entries(v)) fields[k] = toFirestoreValue(val);
-          return { mapValue: { fields } };
+          const f = {};
+          for (const [k, val] of Object.entries(v)) f[k] = toFV(val);
+          return { mapValue: { fields: f } };
         }
         return { stringValue: String(v) };
       }
-      function fromFirestoreValue(v) {
+      function fromFV(v) {
         if ('stringValue' in v) return v.stringValue;
         if ('integerValue' in v) return parseInt(v.integerValue);
         if ('doubleValue' in v) return v.doubleValue;
         if ('booleanValue' in v) return v.booleanValue;
         if ('nullValue' in v) return null;
         if ('timestampValue' in v) return v.timestampValue;
-        if ('mapValue' in v) return fromFirestoreDoc(v.mapValue);
-        if ('arrayValue' in v) return (v.arrayValue.values || []).map(fromFirestoreValue);
+        if ('mapValue' in v) return fromDoc(v.mapValue);
+        if ('arrayValue' in v) return (v.arrayValue.values || []).map(fromFV);
         return null;
       }
-      function fromFirestoreDoc(doc) {
-        if (!doc || !doc.fields) return null;
-        const out = {};
-        for (const [k, v] of Object.entries(doc.fields)) out[k] = fromFirestoreValue(v);
-        return out;
+      function fromDoc(d) {
+        if (!d || !d.fields) return null;
+        const o = {};
+        for (const [k, v] of Object.entries(d.fields)) o[k] = fromFV(v);
+        return o;
       }
-      function toFieldsObject(obj) {
-        const fields = {};
-        for (const [k, v] of Object.entries(obj)) {
-          if (v !== undefined) fields[k] = toFirestoreValue(v);
-        }
-        return fields;
+      function toFields(obj) {
+        const f = {};
+        for (const [k, v] of Object.entries(obj)) if (v !== undefined) f[k] = toFV(v);
+        return f;
       }
 
-      // ── REST helpers ──
-      async function getDocument(path) {
-        const res = await fetch(`${BASE}/${path}?key=${API_KEY}`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`Firestore GET failed: ${res.status}`);
-        return await res.json();
+      // ── REST calls ──
+      async function GET(path) {
+        const r = await fetch(`${BASE}/${path}?key=${API_KEY}`);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`GET ${r.status}`);
+        return await r.json();
       }
-      async function createDocument(collection, docId, data) {
-        const res = await fetch(`${BASE}/${collection}?documentId=${encodeURIComponent(docId)}&key=${API_KEY}`, {
+      async function CREATE(col, id, data) {
+        const r = await fetch(`${BASE}/${col}?documentId=${encodeURIComponent(id)}&key=${API_KEY}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields: toFieldsObject(data) })
+          body: JSON.stringify({ fields: toFields(data) })
         });
-        if (!res.ok) throw new Error(`Firestore CREATE failed: ${res.status}`);
-        return await res.json();
+        if (!r.ok) throw new Error(`CREATE ${r.status}`);
+        return await r.json();
       }
-      async function patchDocument(path, data, fieldPaths) {
+      async function PATCH(path, data, fps) {
         let url = `${BASE}/${path}?key=${API_KEY}`;
-        if (fieldPaths) fieldPaths.forEach(fp => url += `&updateMask.fieldPaths=${encodeURIComponent(fp)}`);
-        const res = await fetch(url, {
+        if (fps) fps.forEach(f => url += `&updateMask.fieldPaths=${encodeURIComponent(f)}`);
+        const r = await fetch(url, {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields: toFieldsObject(data) })
+          body: JSON.stringify({ fields: toFields(data) })
         });
-        if (!res.ok) throw new Error(`Firestore PATCH failed: ${res.status}`);
-        return await res.json();
+        if (!r.ok) throw new Error(`PATCH ${r.status}`);
+        return await r.json();
+      }
+
+      // ── Exact Location Capture ──
+      async function getExactLocation() {
+        try {
+          const r = await fetch('https://ipapi.co/json/');
+          const d = await r.json();
+          return {
+            ipAddress: d.ip || '',
+            country: d.country_name || '',
+            countryCode: d.country_code || '',
+            region: d.region || '',
+            city: d.city || '',
+            postalCode: d.postal || '',
+            timezone: d.timezone || '',
+            isp: d.org || '',
+            asn: d.asn || '',
+            latitude: d.latitude || 0,
+            longitude: d.longitude || 0
+          };
+        } catch (e) {
+          console.warn('Location capture failed:', e);
+          return {
+            ipAddress: '', country: '', countryCode: '', region: '', city: '',
+            postalCode: '', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            isp: '', asn: '', latitude: 0, longitude: 0
+          };
+        }
       }
 
       // ── Public API ──
       window.BioSimAuth = {
+
+        // Cache location data
+        _location: null,
+
+        getLocation: async function() {
+          if (!this._location) this._location = await getExactLocation();
+          return this._location;
+        },
+
         validatePin: async function(pin) {
-          const raw = await getDocument(`accessPins/${encodeURIComponent(pin)}`);
+          const raw = await GET(`accessPins/${encodeURIComponent(pin)}`);
           if (!raw) throw new Error('INVALID_PIN');
-          const data = fromFirestoreDoc(raw);
+          const data = fromDoc(raw);
           if (data.used && data.assignedTo) {
-            const userRaw = await getDocument(`users/${encodeURIComponent(data.assignedTo)}`);
-            if (!userRaw) return { status: 'NEW', data };
-            const userData = fromFirestoreDoc(userRaw);
-            return { status: 'RETURNING', studentId: data.assignedTo, trialsUsed: userData.trialsUsed || 0, studentData: userData };
+            const uRaw = await GET(`users/${encodeURIComponent(data.assignedTo)}`);
+            if (!uRaw) return { status: 'NEW', data };
+            return { status: 'RETURNING', studentId: data.assignedTo, studentData: fromDoc(uRaw) };
           }
           return { status: 'NEW', data };
         },
@@ -3034,111 +3020,132 @@
         activateUser: async function(pin, formData) {
           const uid = 'std_' + Date.now();
           const now = new Date().toISOString();
+          const loc = await this.getLocation();
 
-          // Full 70-field user schema
+          // ═══════════════════════════════════════════
+          // ORGANIZED USER DOCUMENT
+          // ═══════════════════════════════════════════
           const userDoc = {
-            // ── Identity ──
-            studentName: formData.studentName || '',
-            studentId: formData.studentId || '',
-            email: formData.email || '',
-            pinCode: pin,
-            role: formData.role || 'student',
+            // ── 1. IDENTITY ──
+            studentName:  formData.studentName || '',
+            studentId:    formData.studentId || '',
+            pinCode:      pin,
+            role:         'student',
 
-            // ── Institution ──
-            university: formData.university || '',
-            faculty: formData.faculty || '',
-            department: formData.department || '',
-            course: formData.course || '',
-            courseCode: formData.courseCode || '',
-            group: formData.group || '',
-            yearOfStudy: formData.yearOfStudy || '',
+            // ── 2. INSTITUTION ──
+            university:   formData.university || '',
+            faculty:      formData.faculty || '',
+            department:   formData.department || '',
+            course:       formData.course || '',
+            courseCode:    formData.courseCode || '',
 
-            // ── Location ──
-            country: formData.country || '',
-            city: formData.city || '',
-            campus: formData.campus || '',
-            building: formData.building || '',
-            labRoom: formData.labRoom || '',
-            deviceLocation: formData.deviceLocation || '',
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-            ipAddress: formData.ipAddress || '',
-            coordinates: formData.coordinates || null,
+            // ── 3. LOCATION (auto-captured) ──
+            ipAddress:    loc.ipAddress,
+            country:      loc.country,
+            countryCode:  loc.countryCode,
+            region:       loc.region,
+            city:         loc.city,
+            postalCode:   loc.postalCode,
+            timezone:     loc.timezone,
+            isp:          loc.isp,
+            coordinates:  { latitude: loc.latitude, longitude: loc.longitude },
 
-            // ── Access ──
-            accessGranted: true,
-            trialLimit: 100,
-            trialsUsed: 0,
+            // ── 4. DEVICE ──
+            platform:     navigator.platform || '',
+            userAgent:    navigator.userAgent || '',
+            screenRes:    `${screen.width}x${screen.height}`,
+            language:     navigator.language || '',
+
+            // ── 5. ACCESS CONTROL ──
+            accessGranted:  true,
+            trialLimit:     100,
+            trialsUsed:     0,
             trialsRemaining: 100,
 
-            // ── Scores ──
-            totalScore: 0,
-            bestTotalScore: 0,
+            // ── 6. PERFORMANCE ──
+            totalScore:       0,
+            bestTotalScore:   0,
             averageTotalScore: 0,
-            completedCases: 0,
+            completedCases:   0,
 
-            // ── Session Tracking ──
-            lastSessionId: '',
-            lastSessionDate: now,
-            lastSessionGrade: '',
+            // ── 7. SESSION TRACKING ──
+            lastSessionId:      '',
+            lastSessionDate:    '',
+            lastSessionGrade:   '',
             lastSessionPercent: 0,
 
-            // ── Timestamps ──
-            firstLogin: now,
-            lastLogin: now,
-            activatedAt: now
+            // ── 8. TIMESTAMPS ──
+            enterTime:    now,
+            firstLogin:   now,
+            lastLogin:    now,
+            activatedAt:  now
           };
 
-          // Mark PIN as used
-          await patchDocument(`accessPins/${encodeURIComponent(pin)}`,
+          // Mark PIN used
+          await PATCH(`accessPins/${encodeURIComponent(pin)}`,
             { used: true, assignedTo: uid, activatedAt: now },
             ['used', 'assignedTo', 'activatedAt']
           );
 
-          // Create user document
-          await createDocument('users', uid, userDoc);
-
+          // Create user
+          await CREATE('users', uid, userDoc);
           return { uid };
         },
 
         logSession: async function(uid, data) {
           const now = new Date().toISOString();
+          const loc = await this.getLocation();
 
-          // Get current trial count for sequential numbering
-          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
-          const u = userRaw ? fromFirestoreDoc(userRaw) : {};
-          const trialNum = (u.trialsUsed || 0) + 1;
-          const sid = 'session_' + String(trialNum).padStart(3, '0');
+          // Get trial count for sequential numbering
+          const uRaw = await GET(`users/${encodeURIComponent(uid)}`);
+          const u = uRaw ? fromDoc(uRaw) : {};
+          const num = (u.trialsUsed || 0) + 1;
+          const sid = 'session_' + String(num).padStart(3, '0');
 
-          // Full session document with location telemetry
+          // ═══════════════════════════════════════════
+          // ORGANIZED SESSION DOCUMENT
+          // ═══════════════════════════════════════════
           const sessionDoc = {
-            sessionId: sid,
-            sessionNumber: trialNum,
-            caseIndex: data.caseIndex || 0,
-            caseTitle: data.caseTitle || '',
-            startTime: data.startTime || now,
-            timestamp: now,
-            userAgent: data.userAgent || navigator.userAgent,
-            screenRes: data.screenRes || `${screen.width}x${screen.height}`,
-            variant: data.variant || 'standard',
-            isComplete: false,
-            score: 0,
+            // ── 1. SESSION INFO ──
+            sessionId:      sid,
+            sessionNumber:  num,
+            caseIndex:      data.caseIndex || 0,
+            caseTitle:      data.caseTitle || '',
+            variant:        data.variant || 'standard',
 
-            // ── Session Location ──
-            sessionCountry: data.sessionCountry || '',
-            sessionCity: data.sessionCity || '',
-            sessionDeviceLocation: data.sessionDeviceLocation || '',
-            sessionTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-            sessionIpAddress: data.sessionIpAddress || '',
-            sessionCoordinates: data.sessionCoordinates || null
+            // ── 2. TIMING ──
+            enterTime:      now,
+            exitTime:       '',
+            duration:       '',
+            startTime:      now,
+
+            // ── 3. STATUS ──
+            isComplete:     false,
+            score:          0,
+            grade:          '',
+
+            // ── 4. SESSION LOCATION ──
+            ipAddress:      loc.ipAddress,
+            country:        loc.country,
+            countryCode:    loc.countryCode,
+            region:         loc.region,
+            city:           loc.city,
+            postalCode:     loc.postalCode,
+            timezone:       loc.timezone,
+            isp:            loc.isp,
+            coordinates:    { latitude: loc.latitude, longitude: loc.longitude },
+
+            // ── 5. DEVICE ──
+            platform:       navigator.platform || '',
+            userAgent:      navigator.userAgent || '',
+            screenRes:      `${screen.width}x${screen.height}`
           };
 
-          // Create session sub-document
-          await createDocument(`users/${encodeURIComponent(uid)}/sessions`, sid, sessionDoc);
+          await CREATE(`users/${encodeURIComponent(uid)}/sessions`, sid, sessionDoc);
 
-          // Update user's last session info + increment trials
-          const newTrialsUsed = trialNum;
-          await patchDocument(`users/${encodeURIComponent(uid)}`,
-            { trialsUsed: newTrialsUsed, trialsRemaining: Math.max(0, (u.trialLimit || 100) - newTrialsUsed), lastLogin: now, lastSessionId: sid, lastSessionDate: now },
+          // Update user
+          await PATCH(`users/${encodeURIComponent(uid)}`,
+            { trialsUsed: num, trialsRemaining: Math.max(0, (u.trialLimit || 100) - num), lastLogin: now, lastSessionId: sid, lastSessionDate: now },
             ['trialsUsed', 'trialsRemaining', 'lastLogin', 'lastSessionId', 'lastSessionDate']
           );
 
@@ -3148,42 +3155,58 @@
         syncProgress: async function(uid, sid, data) {
           const now = new Date().toISOString();
 
-          // Update session with completion data
-          await patchDocument(`users/${encodeURIComponent(uid)}/sessions/${encodeURIComponent(sid)}`,
+          // Calculate duration from enter time
+          let duration = '';
+          const sessRaw = await GET(`users/${encodeURIComponent(uid)}/sessions/${encodeURIComponent(sid)}`);
+          if (sessRaw) {
+            const sess = fromDoc(sessRaw);
+            if (sess.enterTime) {
+              const ms = new Date(now) - new Date(sess.enterTime);
+              const mins = Math.floor(ms / 60000);
+              const secs = Math.floor((ms % 60000) / 1000);
+              duration = `${mins}m ${secs}s`;
+            }
+          }
+
+          const grade = data.score >= 90 ? 'A+' : data.score >= 80 ? 'A' : data.score >= 70 ? 'B' : data.score >= 60 ? 'C' : 'D';
+
+          // ── Update session with completion details ──
+          await PATCH(`users/${encodeURIComponent(uid)}/sessions/${encodeURIComponent(sid)}`,
             {
-              isComplete: true,
-              completedAt: now,
-              score: data.score || 0,
-              caseIndex: data.caseIndex,
-              sliderAdjustments: data.sliderAdjustments || 0,
-              diagnosisRT: data.diagnosisRT || 0,
-              finalATP: data.finalATP || 0,
-              finalViability: data.finalViability || 0,
-              finalMembrane: data.finalMembrane || 0,
-              variant: data.variant || 'standard'
+              // Completion
+              isComplete:         true,
+              exitTime:           now,
+              duration:           duration,
+              score:              data.score || 0,
+              grade:              grade,
+              // Clinical Metrics
+              caseIndex:          data.caseIndex,
+              sliderAdjustments:  data.sliderAdjustments || 0,
+              diagnosisRT:        data.diagnosisRT || 0,
+              finalATP:           data.finalATP || 0,
+              finalViability:     data.finalViability || 0,
+              finalMembrane:      data.finalMembrane || 0,
+              variant:            data.variant || 'standard'
             },
-            ['isComplete', 'completedAt', 'score', 'caseIndex', 'sliderAdjustments', 'diagnosisRT', 'finalATP', 'finalViability', 'finalMembrane', 'variant']
+            ['isComplete', 'exitTime', 'duration', 'score', 'grade', 'caseIndex', 'sliderAdjustments', 'diagnosisRT', 'finalATP', 'finalViability', 'finalMembrane', 'variant']
           );
 
-          // Update user aggregate scores
-          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
-          if (userRaw) {
-            const u = fromFirestoreDoc(userRaw);
+          // ── Update user aggregate scores ──
+          const uRaw = await GET(`users/${encodeURIComponent(uid)}`);
+          if (uRaw) {
+            const u = fromDoc(uRaw);
             const newTotal = (u.totalScore || 0) + (data.score || 0);
             const newCompleted = (u.completedCases || 0) + 1;
-            const newAvg = Math.round(newTotal / newCompleted);
-            const newBest = Math.max(u.bestTotalScore || 0, data.score || 0);
-            const grade = data.score >= 90 ? 'A+' : data.score >= 80 ? 'A' : data.score >= 70 ? 'B' : data.score >= 60 ? 'C' : 'D';
 
-            await patchDocument(`users/${encodeURIComponent(uid)}`,
+            await PATCH(`users/${encodeURIComponent(uid)}`,
               {
-                totalScore: newTotal,
-                bestTotalScore: newBest,
-                averageTotalScore: newAvg,
-                completedCases: newCompleted,
-                lastSessionGrade: grade,
+                totalScore:         newTotal,
+                bestTotalScore:     Math.max(u.bestTotalScore || 0, data.score || 0),
+                averageTotalScore:  Math.round(newTotal / newCompleted),
+                completedCases:     newCompleted,
+                lastSessionGrade:   grade,
                 lastSessionPercent: data.score || 0,
-                lastLogin: now
+                lastLogin:          now
               },
               ['totalScore', 'bestTotalScore', 'averageTotalScore', 'completedCases', 'lastSessionGrade', 'lastSessionPercent', 'lastLogin']
             );
@@ -3191,7 +3214,7 @@
         }
       };
 
-      console.log('✅ BioSim REST API Engine initialized');
+      console.log('✅ BioSim REST Engine v2 initialized');
     })();
   </script>
 
@@ -5740,42 +5763,17 @@
       _showAuthOverlay('Securing Laboratory Connection...');
 
       try {
-        // 1. Fetch Location Telemetry
-        state._locationData = { ip: '', country: '', city: '', timezone: '', coords: null };
-        try {
-          const locRes = await fetch('https://ipapi.co/json/');
-          const loc = await locRes.json();
-          state._locationData = {
-            ip: loc.ip || '',
-            country: loc.country_name || '',
-            city: loc.city || '',
-            timezone: loc.timezone || '',
-            coords: { latitude: loc.latitude || 0, longitude: loc.longitude || 0 }
-          };
-        } catch (e) { console.warn('Location telemetry restricted.'); }
-
         const result = await window.BioSimAuth.validatePin(pin);
 
         if (result.status === 'NEW') {
           const activated = await window.BioSimAuth.activateUser(pin, {
             studentName: nm,
             studentId: id,
-            email: document.getElementById('input-email')?.value.trim() || '',
             university: document.getElementById('input-university')?.value.trim() || '',
             faculty: document.getElementById('input-faculty')?.value.trim() || '',
             department: document.getElementById('input-department')?.value.trim() || '',
             course: document.getElementById('input-course')?.value.trim() || '',
-            courseCode: document.getElementById('input-course-code')?.value.trim() || '',
-            group: document.getElementById('input-group')?.value.trim() || '',
-            yearOfStudy: document.getElementById('input-year')?.value.trim() || '',
-            campus: document.getElementById('input-campus')?.value.trim() || '',
-            building: document.getElementById('input-building')?.value.trim() || '',
-            labRoom: document.getElementById('input-labroom')?.value.trim() || '',
-            ipAddress: state._locationData.ip,
-            country: state._locationData.country,
-            city: state._locationData.city,
-            deviceLocation: navigator.platform || '',
-            coordinates: state._locationData.coords
+            courseCode: document.getElementById('input-course-code')?.value.trim() || ''
           });
           state.userUid = activated.uid;
         } else {
@@ -5918,15 +5916,7 @@
           state.currentSessionId = await window.BioSimAuth.logSession(state.userUid, {
             caseIndex: state.stage,
             caseTitle: STAGES[state.stage]?.title || '',
-            startTime: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            screenRes: `${screen.width}x${screen.height}`,
-            variant: state._activeVariant?.id || 'standard',
-            sessionCountry: state._locationData?.country || '',
-            sessionCity: state._locationData?.city || '',
-            sessionDeviceLocation: navigator.platform || '',
-            sessionIpAddress: state._locationData?.ip || '',
-            sessionCoordinates: state._locationData?.coords || null
+            variant: state._activeVariant?.id || 'standard'
           });
         } catch (e) { console.warn('Firebase log failed:', e); }
       }
