@@ -2911,7 +2911,8 @@
     // =====================================================================
     let state = {
       // === Firebase Auth & Telemetry ===
-      userUid: null, studentName: '', currentSessionDocId: null,
+      userUid: null, studentName: '', currentSessionId: null,
+      _locationData: { ip: '', country: '', city: '', coords: null },
       _sliderAdjustments: 0, _diagnosisRT: 0, _diagnosisStartTime: 0,
       // === Original State ===
       running: false, stage: 0, recoveryMode: false, time: 60,
@@ -5429,32 +5430,47 @@
     async function startEntry() {
       const nm = document.getElementById('input-name').value.trim();
       const id = document.getElementById('input-id').value.trim();
-      const pin = document.getElementById('input-bin').value.trim(); // Read from BIN field
+      const pin = document.getElementById('input-bin').value.trim();
 
       if (!nm || !pin) {
         _showToast('Please enter your Name and the Secure Access PIN (BIN).');
         return;
       }
 
-      _showAuthOverlay('Verifying Laboratory Credentials...');
+      _showAuthOverlay('Securing Laboratory Connection...');
 
       try {
+        // 1. Fetch Location Telemetry
+        try {
+          const locRes = await fetch('https://ipapi.co/json/');
+          const loc = await locRes.json();
+          state._locationData = {
+            ip: loc.ip,
+            country: loc.country_name,
+            city: loc.city,
+            coords: { latitude: loc.latitude, longitude: loc.longitude }
+          };
+        } catch (e) { console.warn('Location telemetry restricted.'); }
+
         const { validateStudentPin, activateStudent } = await import('./firebase_config.js');
         const result = await validateStudentPin(pin);
 
         if (result.status === 'NEW') {
-          // First-time PIN — activate student
           const activated = await activateStudent(pin, {
             studentName: nm,
+            studentId: id,
             university: document.getElementById('input-university')?.value.trim() || '',
             faculty: document.getElementById('input-faculty')?.value.trim() || '',
             department: document.getElementById('input-department')?.value.trim() || '',
             course: document.getElementById('input-course')?.value.trim() || '',
             courseCode: document.getElementById('input-course-code')?.value.trim() || '',
+            ipAddress: state._locationData.ip,
+            country: state._locationData.country,
+            city: state._locationData.city,
+            coordinates: state._locationData.coords
           });
           state.userUid = activated.uid;
         } else {
-          // Returning student
           state.userUid = result.studentId;
         }
 
@@ -5466,13 +5482,7 @@
         updateDock(-1);
       } catch (err) {
         _hideAuthOverlay();
-        if (err.message === 'INVALID_PIN') {
-          _showToast('Invalid PIN. Please check your access code.');
-        } else if (err.message === 'LIMIT_EXCEEDED') {
-          _showToast('Trial limit reached. Contact your instructor.');
-        } else {
-          _showToast(err.message || 'Authentication failed.');
-        }
+        _showToast(err.message === 'INVALID_PIN' ? 'Invalid PIN.' : (err.message === 'LIMIT_EXCEEDED' ? 'Trial limit reached.' : 'Auth failed.'));
       }
     }
 
@@ -5596,7 +5606,7 @@
       if (state.userUid) {
         try {
           const { logSimulationAttempt } = await import('./firebase_config.js');
-          await logSimulationAttempt(state.userUid, {
+          state.currentSessionId = await logSimulationAttempt(state.userUid, {
             caseIndex: state.stage,
             caseTitle: STAGES[state.stage]?.title || '',
             startTime: new Date().toISOString(),
@@ -6863,9 +6873,10 @@
       state.stagesCompleted = state.stage + 1;
 
       // Sync progress to Firebase
-      if (state.userUid) {
+      if (state.userUid && state.currentSessionId) {
         import('./firebase_config.js').then(({ syncStudentProgress }) => {
           syncStudentProgress(state.userUid, {
+            sessionId: state.currentSessionId,
             caseIndex: state.stage,
             score: state.score.total || state.continuousScore || 0,
             isComplete: true,

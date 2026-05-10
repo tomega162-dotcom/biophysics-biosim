@@ -52,15 +52,15 @@ export async function validateStudentPin(pin) {
 
         // 2. Check if PIN is already assigned to another student
         if (pinData.used && pinData.assignedTo) {
-            const studentRef = doc(db, "students", pinData.assignedTo);
-            const studentSnap = await getDoc(studentRef);
-            const studentData = studentSnap.data();
+            const userRef = doc(db, "users", pinData.assignedTo);
+            const userSnap = await getDoc(userRef);
+            const userData = userSnap.data();
 
             return {
                 status: "RETURNING",
                 studentId: pinData.assignedTo,
-                trialsUsed: studentData.trialsUsed || 0,
-                studentData: studentData
+                trialsUsed: userData.trialsUsed || 0,
+                studentData: userData
             };
         }
 
@@ -80,9 +80,10 @@ export async function activateStudent(pin, studentData) {
 
         await runTransaction(db, async (transaction) => {
             const pinRef = doc(db, "accessPins", pin);
-            const studentRef = doc(db, "students", studentUid);
+            const userRef = doc(db, "users", studentUid);
 
             const pinSnap = await transaction.get(pinRef);
+            if (!pinSnap.exists()) throw new Error("INVALID_PIN");
             if (pinSnap.data().used) throw new Error("PIN_ALREADY_USED");
 
             // 1. Mark PIN as used
@@ -92,19 +93,46 @@ export async function activateStudent(pin, studentData) {
                 activatedAt: serverTimestamp()
             });
 
-            // 2. Create Student Document
-            transaction.set(studentRef, {
-                ...studentData,
+            // 2. Create User Document (New Schema)
+            transaction.set(userRef, {
+                studentName: studentData.studentName || "",
+                studentId: studentData.studentId || "",
+                email: studentData.email || "",
                 pinCode: pin,
                 role: "student",
+                university: studentData.university || "",
+                faculty: studentData.faculty || "",
+                department: studentData.department || "",
+                course: studentData.course || "",
+                courseCode: studentData.courseCode || "",
+                group: studentData.group || "",
+                yearOfStudy: studentData.yearOfStudy || "",
+                
+                // Location Data
+                country: studentData.country || "",
+                city: studentData.city || "",
+                campus: studentData.campus || "",
+                building: studentData.building || "",
+                labRoom: studentData.labRoom || "",
+                deviceLocation: studentData.deviceLocation || "",
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                ipAddress: studentData.ipAddress || "",
+                coordinates: studentData.coordinates || null,
+
                 accessGranted: true,
+                trialLimit: 10,
                 trialsUsed: 0,
                 trialsRemaining: 10,
-                trialLimit: 10,
                 totalScore: 0,
+                bestTotalScore: 0,
+                averageTotalScore: 0,
+                completedCases: [],
+                lastSessionId: null,
+                lastSessionDate: null,
+                lastSessionGrade: null,
+                lastSessionPercent: null,
                 firstLogin: serverTimestamp(),
-                lastLogin: serverTimestamp(),
-                completedCases: []
+                lastLogin: serverTimestamp()
             });
         });
 
@@ -119,33 +147,56 @@ export async function activateStudent(pin, studentData) {
  * Log a simulation attempt and increment trial counter
  */
 export async function logSimulationAttempt(studentUid, attemptData) {
-    const studentRef = doc(db, "students", studentUid);
+    const userRef = doc(db, "users", studentUid);
+    const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     try {
         await runTransaction(db, async (transaction) => {
-            const studentSnap = await transaction.get(studentRef);
-            const data = studentSnap.data();
+            const userSnap = await transaction.get(userRef);
+            if (!userSnap.exists()) throw new Error("USER_NOT_FOUND");
+            const data = userSnap.data();
 
             if (data.trialsUsed >= data.trialLimit) {
                 throw new Error("LIMIT_EXCEEDED");
             }
 
-            // Update student record
-            transaction.update(studentRef, {
+            // Update user record
+            transaction.update(userRef, {
                 trialsUsed: increment(1),
                 trialsRemaining: increment(-1),
-                lastLogin: serverTimestamp()
+                lastLogin: serverTimestamp(),
+                lastSessionId: sessionId
             });
 
-            // Create log entry
-            const logRef = doc(collection(db, "simulationAttempts"));
-            transaction.set(logRef, {
-                studentUid,
-                studentName: data.studentName,
+            // Create Session sub-collection entry
+            const sessionRef = doc(db, "users", studentUid, "sessions", sessionId);
+            transaction.set(sessionRef, {
+                sessionId,
                 timestamp: serverTimestamp(),
-                ...attemptData
+                caseIndex: attemptData.caseIndex,
+                caseTitle: attemptData.caseTitle,
+                
+                // Session Location Telemetry
+                sessionCountry: data.country || "",
+                sessionCity: data.city || "",
+                sessionDeviceLocation: data.deviceLocation || "",
+                sessionTimezone: data.timezone || "",
+                sessionIpAddress: data.ipAddress || "",
+                sessionCoordinates: data.coordinates || null,
+                
+                // Tech Specs
+                userAgent: attemptData.userAgent || "",
+                screenRes: attemptData.screenRes || "",
+                variant: attemptData.variant || "standard",
+                
+                // Progress
+                status: "STARTED",
+                score: 0,
+                percent: 0,
+                grade: "PENDING"
             });
         });
+        return sessionId;
     } catch (error) {
         console.error("Log Attempt Error:", error);
         throw error;
@@ -156,12 +207,43 @@ export async function logSimulationAttempt(studentUid, attemptData) {
  * Sync student progress and case scores
  */
 export async function syncStudentProgress(studentUid, progressData) {
-    const studentRef = doc(db, "students", studentUid);
+    if (!progressData.sessionId) return;
+    
+    const userRef = doc(db, "users", studentUid);
+    const sessionRef = doc(db, "users", studentUid, "sessions", progressData.sessionId);
+    
     try {
-        await updateDoc(studentRef, {
+        // Calculate Grade
+        const percent = Math.min(100, Math.round(progressData.score));
+        let grade = "F";
+        if (percent >= 90) grade = "A+";
+        else if (percent >= 80) grade = "A";
+        else if (percent >= 70) grade = "B";
+        else if (percent >= 60) grade = "C";
+        else if (percent >= 50) grade = "D";
+
+        // 1. Update Session Document
+        await updateDoc(sessionRef, {
+            status: progressData.isComplete ? "COMPLETED" : "IN_PROGRESS",
+            score: progressData.score,
+            percent: percent,
+            grade: grade,
+            sliderAdjustments: progressData.sliderAdjustments || 0,
+            diagnosisRT: progressData.diagnosisRT || 0,
+            finalATP: progressData.finalATP || 0,
+            finalViability: progressData.finalViability || 0,
+            finalMembrane: progressData.finalMembrane || 0,
+            completedAt: serverTimestamp()
+        });
+
+        // 2. Update User Profile Aggregates
+        await updateDoc(userRef, {
             [`progress.case_${progressData.caseIndex}`]: progressData.score,
             completedCases: increment(progressData.isComplete ? 1 : 0),
             totalScore: increment(progressData.score),
+            lastSessionDate: serverTimestamp(),
+            lastSessionGrade: grade,
+            lastSessionPercent: percent,
             lastLogin: serverTimestamp()
         });
     } catch (error) {
