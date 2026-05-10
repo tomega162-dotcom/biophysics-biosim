@@ -5523,8 +5523,9 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-' + id).classList.add('active');
-      // Show dock on all screens except entry
-      document.getElementById('case-dock').style.display = id === 'entry' ? 'none' : 'flex';
+      // Show dock only on case selection and simulation
+      const showDock = (id === 'case' || id === 'sim');
+      document.getElementById('case-dock').style.display = showDock ? 'flex' : 'none';
     }
 
     // =====================================================================
