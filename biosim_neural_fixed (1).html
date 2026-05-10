@@ -69,10 +69,53 @@
     }
 
     /* ===== ENTRY / WELCOME PAGE ===== */
-    @keyframes entryFadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes entryPulse { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
-    @keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
-    @keyframes helixSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+    @keyframes entryFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes entryPulse {
+
+      0%,
+      100% {
+        opacity: .45;
+      }
+
+      50% {
+        opacity: .8;
+      }
+    }
+
+    @keyframes gradientShift {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes helixSpin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     #screen-entry {
       background: #f7f9fc;
@@ -80,75 +123,347 @@
       justify-content: flex-start;
       position: relative;
     }
+
     #screen-entry::before {
-      content:''; position:absolute; top:-120px; right:-120px; width:420px; height:420px;
-      border-radius:50%; background:radial-gradient(circle,rgba(0,180,216,.08) 0%,transparent 70%);
-      pointer-events:none; animation:entryPulse 6s ease-in-out infinite;
-    }
-    #screen-entry::after {
-      content:''; position:absolute; bottom:-100px; left:-100px; width:360px; height:360px;
-      border-radius:50%; background:radial-gradient(circle,rgba(0,119,204,.06) 0%,transparent 70%);
-      pointer-events:none; animation:entryPulse 8s ease-in-out infinite 2s;
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 180, 216, .08) 0%, transparent 70%);
+      pointer-events: none;
+      animation: entryPulse 6s ease-in-out infinite;
     }
 
-    .welcome-wrapper { position:relative; z-index:2; width:100%; max-width:880px; margin:0 auto; padding:40px 24px 60px; display:flex; flex-direction:column; align-items:center; gap:0; }
+    #screen-entry::after {
+      content: '';
+      position: absolute;
+      bottom: -100px;
+      left: -100px;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 119, 204, .06) 0%, transparent 70%);
+      pointer-events: none;
+      animation: entryPulse 8s ease-in-out infinite 2s;
+    }
+
+    .welcome-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
 
     /* Logo Bar */
-    .logo-bar { display:flex; align-items:center; justify-content:center; gap:32px; margin-bottom:28px; animation:entryFadeUp .7s ease both; }
-    .logo-bar img { height:72px; width:auto; object-fit:contain; border-radius:8px; filter:drop-shadow(0 2px 8px rgba(0,0,0,.08)); transition:transform .3s; }
-    .logo-bar img:hover { transform:scale(1.08); }
-    .logo-divider { width:1px; height:48px; background:linear-gradient(to bottom,transparent,var(--border2),transparent); }
+    .logo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 28px;
+      animation: entryFadeUp .7s ease both;
+    }
+
+    .logo-bar img {
+      height: 72px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 8px;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .08));
+      transition: transform .3s;
+    }
+
+    .logo-bar img:hover {
+      transform: scale(1.08);
+    }
+
+    .logo-divider {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, transparent, var(--border2), transparent);
+    }
 
     /* Hero */
-    .entry-hero { text-align:center; margin-bottom:32px; animation:entryFadeUp .7s ease .15s both; }
-    .entry-hero-badge { display:inline-block; padding:6px 18px; border-radius:20px; background:linear-gradient(135deg,rgba(0,119,204,.08),rgba(0,180,216,.08)); border:1px solid rgba(0,119,204,.15); font-family:var(--font-sci); font-size:10px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:18px; }
-    .entry-hero h1 { font-family:var(--font-head); font-size:clamp(22px,3.2vw,38px); font-weight:900; color:var(--text); letter-spacing:2px; line-height:1.3; margin-bottom:10px; }
-    .entry-hero h1 span { background:linear-gradient(135deg,#0077cc,#00b4d8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .entry-hero-sub { font-family:var(--font-ui); font-size:16px; color:var(--text-dim); font-weight:400; letter-spacing:.5px; line-height:1.6; }
+    .entry-hero {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: entryFadeUp .7s ease .15s both;
+    }
+
+    .entry-hero-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(0, 119, 204, .08), rgba(0, 180, 216, .08));
+      border: 1px solid rgba(0, 119, 204, .15);
+      font-family: var(--font-sci);
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .entry-hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(22px, 3.2vw, 38px);
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: 2px;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .entry-hero h1 span {
+      background: linear-gradient(135deg, #0077cc, #00b4d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .entry-hero-sub {
+      font-family: var(--font-ui);
+      font-size: 16px;
+      color: var(--text-dim);
+      font-weight: 400;
+      letter-spacing: .5px;
+      line-height: 1.6;
+    }
 
     /* Info Card */
-    .entry-card { background:#ffffff; border:1px solid var(--border); border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.06); padding:36px 40px; width:100%; max-width:780px; animation:entryFadeUp .7s ease .3s both; }
-    .entry-card-header { display:flex; align-items:center; gap:10px; margin-bottom:24px; padding-bottom:16px; border-bottom:1.5px solid var(--border); }
-    .entry-card-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0077cc,#00b4d8); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; flex-shrink:0; }
-    .entry-card-title { font-family:var(--font-head); font-size:11px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; }
+    .entry-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 780px;
+      animation: entryFadeUp .7s ease .3s both;
+    }
+
+    .entry-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .entry-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0077cc, #00b4d8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .entry-card-title {
+      font-family: var(--font-head);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
 
     /* Info Grid */
-    .entry-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 32px; }
-    .entry-info-item { display:flex; flex-direction:column; gap:4px; }
-    .entry-info-item.full-width { grid-column:1/-1; }
-    .entry-info-label { font-family:var(--font-sci); font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
-    .entry-info-value { font-family:var(--font-ui); font-size:15px; color:var(--text); font-weight:600; padding:10px 14px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; transition:border-color .2s,box-shadow .2s; }
-    .entry-info-value.accent { color:var(--accent); background:linear-gradient(135deg,rgba(0,119,204,.04),rgba(0,180,216,.04)); border-color:rgba(0,119,204,.18); }
+    .entry-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 32px;
+    }
+
+    .entry-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .entry-info-item.full-width {
+      grid-column: 1/-1;
+    }
+
+    .entry-info-label {
+      font-family: var(--font-sci);
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .entry-info-value {
+      font-family: var(--font-ui);
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 600;
+      padding: 10px 14px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .entry-info-value.accent {
+      color: var(--accent);
+      background: linear-gradient(135deg, rgba(0, 119, 204, .04), rgba(0, 180, 216, .04));
+      border-color: rgba(0, 119, 204, .18);
+    }
 
     /* Input Fields inside card */
-    .field-group { display:flex; flex-direction:column; gap:5px; }
-    .field-label { font-family:var(--font-sci); font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
-    .field-input { background:#fff; border:1.5px solid var(--border); color:var(--text); font-family:var(--font-ui); font-size:14px; font-weight:500; padding:11px 16px; outline:none; border-radius:8px; transition:border-color .2s,box-shadow .2s; }
-    .field-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,119,204,.10); }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field-label {
+      font-family: var(--font-sci);
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .field-input {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 11px 16px;
+      outline: none;
+      border-radius: 8px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .field-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 119, 204, .10);
+    }
 
     /* BIN Code special */
-    .bin-code-display { display:flex; align-items:center; gap:10px; }
-    .bin-code-display .field-input { flex:1; background:var(--panel2); color:var(--text-dim); cursor:default; }
-    .bin-tag { font-family:var(--font-sci); font-size:9px; letter-spacing:2px; color:var(--text-dim); background:var(--panel2); border:1px solid var(--border); padding:4px 10px; border-radius:6px; white-space:nowrap; }
+    .bin-code-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bin-code-display .field-input {
+      flex: 1;
+      background: var(--panel2);
+      color: var(--text-dim);
+      cursor: default;
+    }
+
+    .bin-tag {
+      font-family: var(--font-sci);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
 
     /* Launch Button */
-    .btn-primary { background:linear-gradient(135deg,#0077cc,#0090e0); border:none; color:#fff; font-family:var(--font-head); font-size:12px; letter-spacing:3px; padding:16px 40px; cursor:pointer; text-transform:uppercase; border-radius:10px; transition:all .3s; margin-top:20px; box-shadow:0 4px 20px rgba(0,119,204,.25); position:relative; overflow:hidden; }
-    .btn-primary::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.15),transparent); opacity:0; transition:opacity .3s; }
-    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,119,204,.35); }
-    .btn-primary:hover::before { opacity:1; }
-    .btn-primary:active { transform:translateY(0); }
-    .btn-primary span { position:relative; z-index:1; }
+    .btn-primary {
+      background: linear-gradient(135deg, #0077cc, #0090e0);
+      border: none;
+      color: #fff;
+      font-family: var(--font-head);
+      font-size: 12px;
+      letter-spacing: 3px;
+      padding: 16px 40px;
+      cursor: pointer;
+      text-transform: uppercase;
+      border-radius: 10px;
+      transition: all .3s;
+      margin-top: 20px;
+      box-shadow: 0 4px 20px rgba(0, 119, 204, .25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .15), transparent);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 119, 204, .35);
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
 
     /* Footer line */
-    .entry-footer { margin-top:28px; text-align:center; animation:entryFadeUp .7s ease .45s both; }
-    .entry-footer p { font-family:var(--font-sci); font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
+    .entry-footer {
+      margin-top: 28px;
+      text-align: center;
+      animation: entryFadeUp .7s ease .45s both;
+    }
 
-    @media(max-width:640px){
-      .entry-info-grid { grid-template-columns:1fr; }
-      .logo-bar img { height:52px; }
-      .logo-bar { gap:18px; }
-      .entry-card { padding:24px 20px; }
-      .welcome-wrapper { padding:24px 16px 40px; }
+    .entry-footer p {
+      font-family: var(--font-sci);
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    @media(max-width:640px) {
+      .entry-info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .logo-bar img {
+        height: 52px;
+      }
+
+      .logo-bar {
+        gap: 18px;
+      }
+
+      .entry-card {
+        padding: 24px 20px;
+      }
+
+      .welcome-wrapper {
+        padding: 24px 16px 40px;
+      }
     }
 
     /* ===== PANEL SCREENS ===== */
@@ -505,8 +820,15 @@
 
     /* ===== DIAGNOSIS OVERLAY (Case 00) ===== */
     @keyframes diagnosisPop {
-      from { opacity: 0; transform: scale(0.92); }
-      to   { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .diagnosis-question {
@@ -594,24 +916,32 @@
       text-align: left;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
+
     .clinical-briefing::before {
       content: '';
       position: absolute;
-      left: 0; top: 0; bottom: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
       width: 4px;
       background: var(--case-primary, #0077cc);
     }
+
     .briefing-header {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 14px;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     }
-    .briefing-icon { font-size: 18px; }
+
+    .briefing-icon {
+      font-size: 18px;
+    }
+
     .briefing-label {
       font-family: var(--font-head);
       font-size: 10px;
@@ -620,13 +950,23 @@
       text-transform: uppercase;
       font-weight: 700;
     }
+
     .briefing-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px 20px;
     }
-    .briefing-field { display: flex; flex-direction: column; gap: 2px; }
-    .briefing-field.full-width { grid-column: 1 / -1; }
+
+    .briefing-field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .briefing-field.full-width {
+      grid-column: 1 / -1;
+    }
+
     .bf-label {
       font-family: var(--font-sci);
       font-size: 9px;
@@ -634,6 +974,7 @@
       color: var(--text-dim);
       text-transform: uppercase;
     }
+
     .bf-value {
       font-family: var(--font-ui);
       font-size: 13px;
@@ -641,6 +982,7 @@
       font-weight: 500;
       line-height: 1.4;
     }
+
     .bf-value.highlight {
       color: var(--case-primary, #0077cc);
       font-weight: 700;
@@ -966,9 +1308,10 @@
       border-radius: 8px;
       z-index: 100;
       padding: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(8px);
     }
+
     .task-list-header {
       font-family: var(--font-sci);
       font-size: 10px;
@@ -978,6 +1321,7 @@
       margin-bottom: 8px;
       letter-spacing: 1px;
     }
+
     .task-btn {
       width: 100%;
       padding: 8px;
@@ -994,11 +1338,42 @@
       gap: 6px;
       transition: all 0.2s;
     }
-    .task-btn:hover { background: #fff; border-color: var(--case-primary); }
-    .task-btn.done { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #065f46; font-weight: 600; }
-    .task-btn.done::before { content: '✓'; }
-    .task-btn.pending::before { content: '●'; color: var(--case-primary); animation: taskPulse 1.5s infinite; }
-    @keyframes taskPulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+    .task-btn:hover {
+      background: #fff;
+      border-color: var(--case-primary);
+    }
+
+    .task-btn.done {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: #10b981;
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .task-btn.done::before {
+      content: '✓';
+    }
+
+    .task-btn.pending::before {
+      content: '●';
+      color: var(--case-primary);
+      animation: taskPulse 1.5s infinite;
+    }
+
+    @keyframes taskPulse {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
 
     .results-grid {
       display: grid;
@@ -1063,7 +1438,8 @@
     .treatment-panel {
       position: absolute;
       top: 20px;
-      right: 260px; /* offset from right panel */
+      right: 260px;
+      /* offset from right panel */
       width: 340px;
       max-height: calc(100% - 100px);
       background: rgba(255, 255, 255, 0.95);
@@ -1072,7 +1448,8 @@
       border-radius: 12px;
       box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
       z-index: 500;
-      display: none; /* hidden by default */
+      display: none;
+      /* hidden by default */
       flex-direction: column;
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1084,8 +1461,15 @@
     }
 
     @keyframes panelSlideIn {
-      from { opacity: 0; transform: translateX(20px); }
-      to { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .panel-header {
@@ -1129,8 +1513,13 @@
     }
 
     @keyframes stepFade {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .step-title {
@@ -1255,7 +1644,7 @@
       align-items: center;
       gap: 12px;
       border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     }
 
     .shield-hud.active {
@@ -1686,6 +2075,7 @@
       padding: 20px;
       animation: diagnosisPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+
     .diagnosis-modal {
       background: rgba(255, 255, 255, 0.99);
       border: 2.5px solid var(--case-primary);
@@ -1697,6 +2087,7 @@
       position: relative;
       animation: diagnosisPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+
     .diagnosis-question {
       font-family: var(--font-head);
       font-size: 20px;
@@ -1706,11 +2097,13 @@
       margin-bottom: 30px;
       text-align: center;
     }
+
     .diagnosis-options {
       display: grid;
       gap: 12px;
       width: 100%;
     }
+
     .diagnosis-opt {
       background: var(--panel2);
       border: 1.5px solid var(--border);
@@ -1724,12 +2117,13 @@
       transition: all 0.2s;
       text-align: left;
     }
+
     .diagnosis-opt:hover {
       background: #fff;
       border-color: var(--case-primary);
       color: var(--case-primary);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .therapy-select-btn {
@@ -2282,6 +2676,78 @@
       border-color: var(--accent);
       box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
     }
+
+    /* Auth Loading Overlay */
+    #auth-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-left-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .auth-toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 15px 25px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      display: none;
+    }
+
+    @keyframes toastIn {
+      from {
+        transform: translateY(100px) scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .auth-toast.error {
+      background: #ef4444;
+    }
+
+    .auth-toast.success {
+      background: #10b981;
+    }
+
+    .auth-toast.info {
+      background: #3b82f6;
+    }
   </style>
 </head>
 
@@ -2306,7 +2772,8 @@
       <div class="entry-hero">
         <div class="entry-hero-badge">⚛ BioSim v3.0 — Advanced Edition</div>
         <h1>Welcome to the <span>Biophysics Laboratory</span> Platform</h1>
-        <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in real-time biophysical simulations.</p>
+        <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in
+          real-time biophysical simulations.</p>
       </div>
 
       <!-- Student Information Card -->
@@ -2321,7 +2788,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Student Name</div>
-              <input class="field-input" id="input-name" type="text" placeholder="Enter your full name..." autocomplete="off">
+              <input class="field-input" id="input-name" type="text" placeholder="Enter your full name..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2329,7 +2797,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Student ID</div>
-              <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..." autocomplete="off">
+              <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2337,7 +2806,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">University</div>
-              <input class="field-input" id="input-university" type="text" placeholder="Enter university name..." autocomplete="off">
+              <input class="field-input" id="input-university" type="text" placeholder="Enter university name..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2345,7 +2815,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Faculty</div>
-              <input class="field-input" id="input-faculty" type="text" placeholder="Enter faculty name..." autocomplete="off">
+              <input class="field-input" id="input-faculty" type="text" placeholder="Enter faculty name..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2353,7 +2824,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Department</div>
-              <input class="field-input" id="input-department" type="text" placeholder="Enter department name..." autocomplete="off">
+              <input class="field-input" id="input-department" type="text" placeholder="Enter department name..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2361,7 +2833,8 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Course</div>
-              <input class="field-input" id="input-course" type="text" placeholder="Enter course name..." autocomplete="off">
+              <input class="field-input" id="input-course" type="text" placeholder="Enter course name..."
+                autocomplete="off">
             </div>
           </div>
 
@@ -2369,17 +2842,19 @@
           <div class="entry-info-item">
             <div class="field-group">
               <div class="field-label">Course Code</div>
-              <input class="field-input" id="input-course-code" type="text" placeholder="Enter course code..." autocomplete="off">
+              <input class="field-input" id="input-course-code" type="text" placeholder="Enter course code..."
+                autocomplete="off">
             </div>
           </div>
 
-          <!-- BIN Code (non-functional / display only) -->
+          <!-- Secure Access PIN -->
           <div class="entry-info-item">
             <div class="field-group">
-              <div class="field-label">BIN Code</div>
+              <div class="field-label">Secure Access PIN</div>
               <div class="bin-code-display">
-                <input class="field-input" id="input-bin" type="text" placeholder="— — — —" disabled readonly>
-                <span class="bin-tag">Display Only</span>
+                <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15"
+                  autocomplete="off">
+                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
               </div>
             </div>
           </div>
@@ -2400,6 +2875,13 @@
     </div>
   </div>
 
+  <!-- Auth Loading Overlay -->
+  <div id="auth-overlay">
+    <div class="spinner"></div>
+    <div id="auth-status-text">Verifying Laboratory Credentials...</div>
+  </div>
+  <div id="auth-toast" class="auth-toast"></div>
+
   <!-- ===== INTRO ===== -->
   <div id="screen-intro" class="screen">
     <div class="panel-screen">
@@ -2413,7 +2895,8 @@
         with no mid-case alert. Instead, you will face careful diagnostic questions throughout.<br><br>
         Your score is continuous: every second with parameters in range earns points.<br>
         Excessive slider adjustments incur an efficiency penalty.<br><br>
-        Cases are all available for review. <em>Complete each case sequentially to unlock the next laboratory challenge.</em>
+        Cases are all available for review. <em>Complete each case sequentially to unlock the next laboratory
+          challenge.</em>
       </div>
       <div class="panel-stats">
         <div class="pstat">
@@ -2457,14 +2940,33 @@
     </div>
   </div>
 
+  <!-- Trial Limit Exceeded Overlay -->
+  <div id="screen-lockout" class="screen">
+    <div class="panel-screen">
+      <div class="panel-tag" style="background:var(--danger)">Access Restricted</div>
+      <div class="panel-title">Maximum Simulation Attempts Reached</div>
+      <div class="panel-body" style="text-align:center;">
+        Your access PIN has reached the maximum allowed <strong>10 simulation attempts</strong>.<br><br>
+        <div
+          style="background:rgba(239, 68, 68, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--danger);">
+          Please contact your <strong>instructor</strong> or <strong>laboratory supervisor</strong> for further access.
+        </div>
+      </div>
+      <button class="btn-primary" onclick="location.reload()"><span>Return to Entry →</span></button>
+    </div>
+  </div>
+
   <!-- ===== MAIN SIM ===== -->
   <div id="screen-sim" class="screen">
     <!-- Diagnosis Question Overlay -->
     <div id="diagnosis-overlay" class="diagnosis-overlay" style="display:none">
       <div class="diagnosis-modal">
-        <div style="font-family:var(--font-sci);font-size:10px;letter-spacing:3px;color:var(--case-primary,#0077cc);text-transform:uppercase;margin-bottom:14px;text-align:center;border-bottom:1px solid var(--border);padding-bottom:10px;">📋 CLINICAL ASSESSMENT — DIAGNOSE THE CONDITION</div>
+        <div
+          style="font-family:var(--font-sci);font-size:10px;letter-spacing:3px;color:var(--case-primary,#0077cc);text-transform:uppercase;margin-bottom:14px;text-align:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+          📋 CLINICAL ASSESSMENT — DIAGNOSE THE CONDITION</div>
         <div id="diagnosis-feedback-box"></div>
-        <div class="diagnosis-question" id="diagnosis-question-text">Based on what you are observing — what is the primary fault driving cellular dysfunction?</div>
+        <div class="diagnosis-question" id="diagnosis-question-text">Based on what you are observing — what is the
+          primary fault driving cellular dysfunction?</div>
         <div id="diagnosis-options" class="diagnosis-options"></div>
       </div>
     </div>
@@ -2472,15 +2974,17 @@
     <!-- Phase 1 Score Panel -->
     <div id="ph1-score-overlay" class="diagnosis-overlay"
       style="display:none; flex-direction:column; align-items:center; text-align:center; background:rgba(255,255,255,0.97); border:2px solid var(--accent2)">
-      <div class="summary-container" style="max-width:800px; width:90%; background:#fff; border:2px solid var(--border); border-radius:12px; padding:40px; box-shadow:0 20px 50px rgba(0,0,0,0.15); text-align:center; position:relative; overflow:hidden">
-      <div id="summary-banner"></div>
-      <div class="panel-title" style="font-size:18px; margin-bottom:10px">STABILIZATION SUCCESSFUL</div>
-      <div id="ph1-score-grid"
-        style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0; width:100%; max-width:320px">
+      <div class="summary-container"
+        style="max-width:800px; width:90%; background:#fff; border:2px solid var(--border); border-radius:12px; padding:40px; box-shadow:0 20px 50px rgba(0,0,0,0.15); text-align:center; position:relative; overflow:hidden">
+        <div id="summary-banner"></div>
+        <div class="panel-title" style="font-size:18px; margin-bottom:10px">STABILIZATION SUCCESSFUL</div>
+        <div id="ph1-score-grid"
+          style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0; width:100%; max-width:320px">
+        </div>
+        <div style="font-family:var(--font-sci); font-size:10px; color:var(--text-dim); margin-top:10px">Analyzing
+          patient
+          vitals...</div>
       </div>
-      <div style="font-family:var(--font-sci); font-size:10px; color:var(--text-dim); margin-top:10px">Analyzing patient
-        vitals...</div>
-    </div>
     </div>
 
     <!-- Clinical Alert Overlay -->
@@ -2523,6 +3027,12 @@
 
     <div class="topbar" id="topbar">
       <div class="topbar-brand">BIOSIM</div>
+      <div class="topbar-sep"></div>
+      <div style="display:flex; flex-direction:column; justify-content:center; padding: 0 15px;">
+        <div style="font-size:9px; color:var(--text-dim); letter-spacing:1px;">TRIALS REMAINING</div>
+        <div id="hud-trials-remaining"
+          style="font-family:var(--font-sci); font-size:14px; font-weight:bold; color:var(--accent2);">10 / 10</div>
+      </div>
       <div class="topbar-sep"></div>
       <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
       <div class="topbar-sep"></div>
@@ -2819,7 +3329,9 @@
       <div id="summary-banner" style="margin-bottom:20px"></div>
       <div class="panel-tag">🏆 Simulation Complete</div>
       <div class="panel-title" style="margin-bottom:12px">Final Performance Report</div>
-      <div id="summary-student" style="font-family:var(--font-sci);font-size:12px;color:var(--text-dim);letter-spacing:2px;margin-bottom:24px">RESEARCHER: —</div>
+      <div id="summary-student"
+        style="font-family:var(--font-sci);font-size:12px;color:var(--text-dim);letter-spacing:2px;margin-bottom:24px">
+        RESEARCHER: —</div>
       <div id="summary-table" style="width:100%;margin-bottom:28px"></div>
       <div style="display:flex;gap:24px;justify-content:center;margin-bottom:28px;flex-wrap:wrap">
         <div class="pstat" style="min-width:160px">
@@ -2835,7 +3347,9 @@
           <div class="pstat-val" id="summary-completed">0 / 7</div>
         </div>
       </div>
-      <div id="summary-verdict" style="font-family:var(--font-ui);font-size:16px;color:var(--text-mid);line-height:1.8;max-width:600px;margin:0 auto 32px;font-weight:400"></div>
+      <div id="summary-verdict"
+        style="font-family:var(--font-ui);font-size:16px;color:var(--text-mid);line-height:1.8;max-width:600px;margin:0 auto 32px;font-weight:400">
+      </div>
       <button class="btn-primary" onclick="restartSim()"><span>↺ New Session</span></button>
     </div>
   </div>
@@ -2973,7 +3487,7 @@
       _selectedRadType: 'gamma',
       _selectedShieldType: 'none',
       _selectedPayload: 'none',
-      _shieldedCellIndices: [], 
+      _shieldedCellIndices: [],
     };
 
     // =====================================================================
@@ -4046,11 +4560,11 @@
         const fluxAmp = (ft === 'hypertonic' || ft === 'earlyHypertonic') ? 1.5 : (ft === 'hypotonic') ? 1.5 : 1.0;
         const extOsm = p.na / 50, intOsm = p.k / 50;
         const osmoDiff = extOsm - intOsm;
-        
+
         // Aquaporin Block Mechanic
         const aqLimit = (ft === 'aquaporinBlock' && !state.midCaseEventFired) ? 0.15 : 1.0;
         const waterFlux = Math.sign(osmoDiff) * Math.pow(Math.abs(osmoDiff), 1.6) * (p.perm / 100) * fluxAmp * aqLimit;
-        
+
         if (waterFlux > 0.4) { memDelta -= waterFlux * 0.7; ionDelta -= 0.25; }
         else if (waterFlux < -0.4) { memDelta -= Math.abs(waterFlux) * 0.9; viabDelta -= 0.1; }
         else { memDelta += 0.3; ionDelta += 0.2; }
@@ -4062,7 +4576,7 @@
         const tpPenaltyMult = (ft === 'pumpFail') ? 1.8 : 1.0;
         if (p.tp > 50 && p.tp < 72) { atpDelta -= 0.08; ionDelta += 0.15; memDelta += 0.12; }
         else if (p.tp > 85) { atpDelta -= (0.5 * tpPenaltyMult); ionDelta -= 0.3; viabDelta -= (0.15 * tpPenaltyMult); }
-        
+
         if (p.ca > 70) { memDelta += 0.08; ionDelta -= 0.2; atpDelta -= 0.1; }
         if (p.ca < 20) memDelta -= 0.1;
       }
@@ -4137,7 +4651,7 @@
         const doseRate = p.na / 10;
         const repairRate = p.ca / 100;
         const t = state.stageTimer;
-        
+
         // 1. Alert Triggers (~30s)
         if (t >= 30 && !state._case5AlertTriggered) {
           state._case5AlertTriggered = true;
@@ -4171,14 +4685,14 @@
             else if (ft === 'betaTargeting') type = 'beta';
             else if (ft === 'mixedSource') type = Math.random() < 0.5 ? 'alpha' : 'beta';
             else if (ft === 'bnctSimulation') type = 'neutron';
-            
+
             // Override with gamma for alerts/scenarios
             if (state._gammaActive) type = 'gamma';
-            
+
             const startX = state._angleShifted && Math.random() > 0.5 ? canvas.width : 50;
             const startY = state._angleShifted && Math.random() > 0.5 ? Math.random() * canvas.height : 50;
             const angle = Math.atan2(cy - startY, cx - startX) + (Math.random() - 0.5) * 0.8;
-            
+
             state._radTracks.push({
               x: startX, y: startY,
               angle: angle,
@@ -4201,13 +4715,13 @@
 
         for (const cell of state._therapyCells) {
           if (cell.dead) continue;
-          
+
           let cellExposure = 0;
-          const distToSource = Math.sqrt((cell.x - 50)**2 + (cell.y - 50)**2);
-          
+          const distToSource = Math.sqrt((cell.x - 50) ** 2 + (cell.y - 50) ** 2);
+
           // Distance attenuation (Inverse Square feel)
           const distanceFactor = Math.min(1.5, 50000 / (distToSource * distToSource + 1000));
-          
+
           // BNCT Secondary Alpha logic
           if (ft === 'bnctSimulation' && cell.hasBoron) {
             cellExposure += doseRate * 1.5; // High damage to boron cells
@@ -4217,7 +4731,7 @@
           state._radTracks.forEach(tr => {
             if (!tr.active) return;
             const dx = cell.x - tr.x, dy = cell.y - tr.y;
-            const d = Math.sqrt(dx*dx + dy*dy);
+            const d = Math.sqrt(dx * dx + dy * dy);
             if (d < cell.r + 5) {
               const eff = shieldEfficiency[cell.shield]?.[tr.type] || 0;
               if (Math.random() > eff) {
@@ -4239,7 +4753,7 @@
             cell.hp = Math.min(100, cell.hp + repairRate * 0.5);
             cell.exposure = Math.max(0, cell.exposure - 0.2);
           }
-          
+
           if (!cell.isCancer && cell.dead) viabDelta -= 1.5;
           if (cell.isCancer && cell.dead) viabDelta += 0.5;
         }
@@ -4257,10 +4771,10 @@
         const cancerCells = state._therapyCells.filter(c => c.isCancer);
         state._healthyCellHP = healthyCells.reduce((sum, c) => sum + c.hp, 0) / healthyCells.length;
         state._tumorHP = cancerCells.length > 0 ? cancerCells.reduce((sum, c) => sum + c.hp, 0) / cancerCells.length : 0;
-        
+
         state.membrane = 100 - state._tumorHP;
         state.ion = state._healthyCellHP;
-        
+
         atpDelta -= 0.15;
       }
 
@@ -4290,7 +4804,7 @@
             const infX = cx + cellRadius * 0.4, infY = cy + cellRadius * 0.4;
             state._secondaryInfection = { x: infX, y: infY, r: cellRadius * 0.3 };
             for (const c of state._lipoCells) {
-              const d = Math.sqrt((c.x - infX)**2 + (c.y - infY)**2);
+              const d = Math.sqrt((c.x - infX) ** 2 + (c.y - infY) ** 2);
               if (d < cellRadius * 0.3) c.localPH = 6.4;
             }
             addLog('🦠 ALERT: Secondary infection site developing in peripheral tissue. Direct liposomes immediately!', 'critical');
@@ -4323,15 +4837,15 @@
           if (ft === 'chargeTargeting' && ionic > 60 && !p.aggregated) {
             state._lipoParticles.forEach((p2, idx2) => {
               if (idx === idx2 || p2.released || p2.aggregated) return;
-              const d = Math.sqrt((p.x-p2.x)**2 + (p.y-p2.y)**2);
+              const d = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
               if (d < 15) { p.aggregated = true; p2.aggregated = true; p.vx = 0; p.vy = 0; }
             });
           }
 
           // Release Triggers
           let triggerRelease = false;
-          const nearestCell = state._lipoCells.find(c => Math.sqrt((c.x-p.x)**2 + (c.y-p.y)**2) < c.r + 10);
-          
+          const nearestCell = state._lipoCells.find(c => Math.sqrt((c.x - p.x) ** 2 + (c.y - p.y) ** 2) < c.r + 10);
+
           if (nearestCell) {
             if (ft === 'thermoRelease') {
               if (nearestCell.localTemp > 38 + (threshold * 0.05)) triggerRelease = true;
@@ -4341,7 +4855,7 @@
               const specMatch = nearestCell.hasReceptors ? (affinity > 50) : (affinity > 85); // High affinity = cross reactivity
               if (specMatch && Math.random() < 0.05) {
                 p.boundTo = nearestCell;
-                if (t > 15) triggerRelease = true; 
+                if (t > 15) triggerRelease = true;
               }
             } else if (ft === 'fusionRoute') {
               if (nearestCell.isMacrophage) {
@@ -4515,9 +5029,9 @@
         const ft = state._activeVariant?.faultType || '';
         const atpFactor = Math.max(0, Math.min(1, atpSupply / 70));
         atpDelta += (atpSupply >= 40 && atpSupply <= 70) ? 0.2 : -0.25;
-        
+
         const pumpActive = pumpThresh >= 40 && pumpThresh <= 60;
-        
+
         // Variant Mechanics
         if (ft === 'pumpFailNerve') {
           if (!pumpActive || atpFactor < 0.4) { ionDelta -= 0.8; viabDelta -= 0.2; if (Math.random() < 0.05) addLog('Na+/K+ pump failure in neural tissue.', 'danger'); }
@@ -4543,7 +5057,7 @@
 
         if (coupling >= 50 && coupling <= 70 && atpFactor > 0.5) { ionDelta += 0.2; viabDelta += 0.1; }
         if (inhibitor > 50) { atpDelta -= 0.3 * (inhibitor / 100); viabDelta -= 0.1 * (inhibitor / 100); }
-        
+
         state._pumpActive = pumpActive && atpFactor > 0.5;
       }
 
@@ -4552,7 +5066,7 @@
         const doseRate = p.na, hydration = p.k, scavenger = p.tp, repairRate = p.ca, h2o2detox = p.temp;
         const ft = state._activeVariant?.faultType || '';
         const time = state.stageTimer || 0;
-        
+
         if (!state._case7AlertTriggered && time >= 30) {
           state._case7AlertTriggered = true;
           if (ft === 'indirectDominant') { state._h2o2Alert = true; addLog('☢️ ALERT: Hydroxyl radicals combining into H₂O₂! Standard scavengers ineffective. Deploy H₂O₂ detoxifier.', 'critical'); }
@@ -4566,37 +5080,37 @@
         // Base Rates with Clinical Modifiers
         const o2Mod = 1.0 + (state._o2Sensitized || 0);
         const aoxMod = Math.max(0.1, 1.0 - (state._aoxSustained || 0) * 0.6);
-        
+
         let directRate = (doseRate / 100) * 0.25;
         let indirectRate = (doseRate / 100) * 0.45 * (hydration / 60) * o2Mod;
-        
+
         if (ft === 'indirectDominant') { directRate *= 0.2; indirectRate *= 1.6; }
         if (ft === 'directDominant') { directRate *= 1.8; indirectRate *= 0.1; if (state._dualPathwayAlert) indirectRate = (doseRate / 100) * 0.4 * o2Mod; }
-        
+
         const scavRed = Math.max(0, 1 - (scavenger / 100) * 0.85) * aoxMod;
         const detoxRed = state._h2o2Alert ? (h2o2detox / 100) * 0.9 : 0;
         const repairEff = (repairRate / 100) * (state._repairOverwhelmed ? 0.08 : 0.4);
 
         let totalDmgAcc = 0;
         let cellCount = state._dnaCells.length || 1;
-        
+
         for (const cell of state._dnaCells) {
           let cellDirect = directRate;
           let cellIndirect = indirectRate * scavRed;
-          
+
           // Sensitize tumor cells if O2 or Boron is used
           if (cell.isCancer) {
             if (state._boronLoaded) { cellDirect *= 2.0; cellIndirect *= 1.5; }
             if (state._o2Sensitized > 0) { cellIndirect *= 1.4; }
           }
-          
+
           if (ft === 'germlineSomatic' && state._germlineBurst && cell.isGermline) { cellDirect *= 2.5; cellIndirect *= 2.0; }
           if (ft === 'stochDeterministic' && !state._doseEscalation && !cell.isCancer) {
             if (Math.random() > doseRate / 100) { cellDirect = 0; cellIndirect *= 0.3; }
           }
-          
+
           if (cell.shielded) { cellDirect *= 0.05; cellIndirect *= 0.3; }
-          
+
           const netDmg = (cellDirect + cellIndirect + (state._h2o2Alert ? 0.3 * (1 - detoxRed) : 0)) - repairEff;
           cell.hp = Math.max(0, Math.min(100, cell.hp - netDmg));
           cell.dnaDamage = (100 - cell.hp) / 10;
@@ -4611,10 +5125,10 @@
         const avgDmg = totalDmgAcc / cellCount;
         state._dnaDirectDmg = avgDmg * 0.4;
         state._dnaIndirectDmg = avgDmg * 0.6;
-        
+
         viabDelta -= (avgDmg / 100) * 0.45;
         if (repairRate > 75) atpDelta -= 0.3;
-        
+
         state.membrane = Math.max(0, Math.min(100, 100 - state._dnaDirectDmg));
         state.ion = Math.max(0, Math.min(100, 100 - state._dnaIndirectDmg));
       }
@@ -5010,7 +5524,7 @@
       // Shield toggle row
       const shieldRow = document.getElementById('shield-row');
       if (shieldRow) shieldRow.style.display = cfg.sections.shield ? '' : 'none';
-      
+
       // Therapy controls panel
       let therapyPanel = document.getElementById('therapy-controls-panel');
       if (cfg.sections.therapy) {
@@ -5066,7 +5580,7 @@
       const elecGroup = elecHeader?.nextElementSibling;
       envHeader = document.getElementById('ctrl-header-env');
       const envGroup = envHeader?.nextElementSibling;
-      
+
       const hideStandard = !!cfg.sections.radiationPlanning;
       [transHeader, transGroup, elecHeader, elecGroup, envHeader, envGroup].forEach(el => {
         if (el) el.style.display = hideStandard ? 'none' : '';
@@ -5140,13 +5654,13 @@
     function openTreatmentPanel() {
       const panel = document.getElementById('clinical-treatment-panel');
       if (!panel) return;
-      
+
       const variant = state._activeVariant;
       if (!variant) return;
 
       state._clinicalStep = 1;
       panel.classList.add('active');
-      
+
       // Inject Step 1 Content: Intro
       const profile = variant.clinicalProfile || { age: '45', symptoms: 'Localized superficial lesion.', context: 'Patient requires precision radiation.', tumorType: 'Basal Cell Carcinoma' };
       const profileHTML = `
@@ -5159,7 +5673,7 @@
         </div>
       `;
       document.getElementById('patient-profile-content').innerHTML = profileHTML;
-      
+
       // Hide the default right panel controls for these cases
       document.getElementById('right-panel').style.opacity = '0.3';
       document.getElementById('right-panel').style.pointerEvents = 'none';
@@ -5172,7 +5686,7 @@
         s.classList.toggle('active', (i + 1) === step);
       });
       state._clinicalStep = step;
-      
+
       const btn = document.getElementById('btn-next-step');
       if (step === 3) btn.textContent = 'Confirm Treatment Plan';
       else btn.textContent = 'Next Step →';
@@ -5183,13 +5697,13 @@
         // Prepare Step 2: Diagnosis
         const variant = state._activeVariant;
         document.getElementById('treatment-diag-question').textContent = variant.diagnosisQuestion;
-        
+
         const optsContainer = document.getElementById('treatment-diag-options');
         optsContainer.innerHTML = '';
-        
+
         const allOpts = [variant.correctAnswer, ...variant.wrongAnswers];
         allOpts.sort(() => Math.random() - 0.5);
-        
+
         allOpts.forEach(opt => {
           const div = document.createElement('div');
           div.className = 'diagnosis-opt';
@@ -5197,7 +5711,7 @@
           div.onclick = () => selectTreatmentDiagnosis(opt, div);
           optsContainer.appendChild(div);
         });
-        
+
         showTreatmentStep(2);
       } else if (state._clinicalStep === 2) {
         if (!state._treatmentDiagnosed) {
@@ -5217,7 +5731,7 @@
         o.style.borderColor = 'var(--border)';
         o.style.background = 'var(--panel2)';
       });
-      
+
       if (opt === variant.correctAnswer) {
         el.style.borderColor = 'var(--accent2)';
         el.style.background = 'rgba(0, 168, 120, 0.1)';
@@ -5238,22 +5752,22 @@
           const group = btn.parentElement.id;
           document.querySelectorAll(`#${group} .choice-btn`).forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
-          
+
           const val = btn.dataset.val;
           if (group === 'plan-rad-type') state._selectedRadType = val;
           if (group === 'plan-shield-type') state._selectedShieldType = val;
           if (group === 'plan-payload') state._selectedPayload = val;
           if (group === 'plan-oxygen') state._selectedOxygen = val;
           if (group === 'plan-antiox') state._selectedAntiox = val;
-          
-          addLog(`Configuration updated: ${group.replace('plan-','').toUpperCase()} set to ${val.toUpperCase()}.`, 'info');
+
+          addLog(`Configuration updated: ${group.replace('plan-', '').toUpperCase()} set to ${val.toUpperCase()}.`, 'info');
         };
       });
     }
 
     function startInteractiveTreatment() {
       document.getElementById('clinical-treatment-panel').classList.remove('active');
-      
+
       if (state._selectedShieldType !== 'none') {
         document.getElementById('shield-hud').classList.add('active');
         document.getElementById('shield-type-color').style.backgroundColor = getShieldColor(state._selectedShieldType);
@@ -5277,20 +5791,20 @@
       if (type === 'o2') state._selectedOxygen = val;
       if (type === 'antiox') state._selectedAntiox = val;
       if (type === 'shield') state._selectedShieldType = val;
-      
+
       // Apply immediate physical effects
       if (state.stage === 6) {
         if (state._selectedRadType === 'alpha') state.params.na = 30;
         if (state._selectedRadType === 'beta') state.params.na = 50;
         if (state._selectedRadType === 'gamma') state.params.na = 80;
-        
+
         if (state._selectedAntiox === 'standard') state.params.tp = 60;
         if (state._selectedAntiox === 'sustained') state.params.tp = 90;
-        
+
         if (state._selectedOxygen === 'hyperbaric') state.params.k = 85;
         if (state._selectedOxygen === 'normoxic') state.params.k = 60;
         if (state._selectedOxygen === 'hypobaric') state.params.k = 30;
-        
+
         updateVisuals();
         applyStageControls(STAGES[6]); // Refresh buttons
       }
@@ -5305,13 +5819,25 @@
     // =====================================================================
     // FREE CASE NAVIGATION
     // =====================================================================
-    function selectCase(n) {
+    async function selectCase(n) {
       // Stop current sim if running
       if (state.running) {
         state.running = false;
         clearInterval(state.simInterval); clearInterval(state.logInterval);
         setRecovery(false);
       }
+
+      // Security Check: Trial Limits
+      try {
+        const { db } = await import('./firebase_config.js');
+        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const stdSnap = await getDoc(doc(db, "students", state.userUid || 'dummy'));
+        if (stdSnap.exists() && stdSnap.data().trialsUsed >= 10) {
+          showScreen('lockout');
+          return;
+        }
+      } catch (e) { console.error("Limit check skipped:", e); }
+
       // sequential enforcement
       if (!state.caseUnlocked[n]) {
         addLog('MISSION DENIED: Case is currently locked. Complete the previous laboratory challenge first.', 'danger');
@@ -5415,14 +5941,79 @@
         }
       }
     }
-    function startEntry() {
+    async function startEntry() {
       const nm = document.getElementById('input-name').value.trim();
       const id = document.getElementById('input-id').value.trim();
-      state.userName = nm || 'Researcher';
-      state.userId = id || 'LAB-001';
-      showScreen('intro');
-      document.getElementById('case-dock').style.display = 'flex';
-      updateDock(-1); // Initialize dock with lock states, no active case yet
+      const pin = document.getElementById('input-pin').value.trim();
+
+      const uni = document.getElementById('input-university').value.trim();
+      const fac = document.getElementById('input-faculty').value.trim();
+      const dept = document.getElementById('input-department').value.trim();
+      const course = document.getElementById('input-course').value.trim();
+      const code = document.getElementById('input-course-code').value.trim();
+
+      if (!nm || !pin) {
+        showAuthToast("Please provide your name and secure PIN.", "error");
+        return;
+      }
+
+      const overlay = document.getElementById('auth-overlay');
+      const statusText = document.getElementById('auth-status-text');
+      overlay.style.display = 'flex';
+
+      try {
+        const { validateStudentPin, activateStudent } = await import('./firebase_config.js');
+
+        statusText.textContent = "Authenticating PIN...";
+        const authResult = await validateStudentPin(pin);
+
+        if (authResult.status === "NEW") {
+          statusText.textContent = "Activating New Account...";
+          await activateStudent(pin, {
+            studentName: nm,
+            studentId: id,
+            university: uni,
+            faculty: fac,
+            department: dept,
+            course: course,
+            courseCode: code
+          });
+          showAuthToast("Welcome to BioSim! Account activated.", "success");
+        } else {
+          showAuthToast("Welcome back, Researcher.", "success");
+        }
+
+        // Successfully authenticated
+        state.userName = nm || 'Researcher';
+        state.userId = id || 'LAB-001';
+        state.userPin = pin;
+        state.userUid = authResult.studentId || authResult.uid;
+        state.trialsUsed = authResult.trialsUsed || 0;
+
+        document.getElementById('hud-trials-remaining').textContent = `${10 - state.trialsUsed} / 10`;
+
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          showScreen('intro');
+          document.getElementById('case-dock').style.display = 'flex';
+          updateDock(-1);
+        }, 800);
+
+      } catch (err) {
+        overlay.style.display = 'none';
+        let msg = "Authentication failed. Please check your connection.";
+        if (err.message === "INVALID_PIN") msg = "Invalid Access PIN. Please try again.";
+        if (err.message === "LIMIT_EXCEEDED") msg = "Maximum trial limit reached for this PIN.";
+        showAuthToast(msg, "error");
+      }
+    }
+
+    function showAuthToast(msg, type) {
+      const t = document.getElementById('auth-toast');
+      t.textContent = msg;
+      t.className = `auth-toast ${type}`;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
     }
 
     function showCaseIntro() { selectCase(0); }
@@ -5533,14 +6124,38 @@
       if (hint) hint.style.opacity = '1';
     }
 
-    function beginSimulation() {
+    async function beginSimulation() {
       if (state.running) return;
+
+      // Log Attempt to Firebase
+      try {
+        const { logSimulationAttempt } = await import('./firebase_config.js');
+        await logSimulationAttempt(state.userUid, {
+          caseIndex: state.stage,
+          caseTitle: STAGES[state.stage].title,
+          startTime: new Date().toISOString()
+        });
+
+        // Update local trial count
+        state.trialsUsed = (state.trialsUsed || 0) + 1;
+        const trialsRemaining = 10 - state.trialsUsed;
+        document.getElementById('hud-trials-remaining').textContent = `${trialsRemaining} / 10`;
+        if (trialsRemaining < 0) { showScreen('lockout'); return; }
+
+      } catch (err) {
+        if (err.message === "LIMIT_EXCEEDED") {
+          showScreen('lockout');
+          return;
+        }
+        console.error("Trial logging failed:", err);
+      }
+
       state.running = true;
       state.time = STAGES[state.stage]?.duration || 60;
       state._startTime = Date.now();
       // Case 00 Normal phase (stage 0, phase 1) should be UNLOCKED (phase 3). 
       // All other clinical cases start in Observation (phase 1).
-      state._clinicalPhase = 1; 
+      state._clinicalPhase = 1;
       state._diagnosisAnswered = false; // Reset diagnosis
       state._diagnosisShown = false;
       state._refractoryLock = false;
@@ -5792,7 +6407,7 @@
           if (isCorrect) addLog('✨ First Move Bonus: Correct physiological target identified!', 'good');
           else addLog('⚠ Diagnostic Error: Incorrect first intervention target.', 'danger');
         }
-      } 
+      }
       // Legacy Case 00 Phase 1 First Move (Pre-Assessment)
       else if (state.stage === 0 && state._phase === 1 && target && state._diagnosisAnswered && !state._firstMoveHandled) {
         state._firstMoveHandled = true;
@@ -5957,7 +6572,7 @@
       // 2. Clinical Workflow Sequencing (Case 07 Specific Timeline)
       if (state.stage === 6 && state.running) {
         const elapsedSec = Math.floor(elapsed / 1000);
-        
+
         // Step 1: Profile (0s)
         if (elapsedSec >= 0 && state._clinicalStep === 0) {
           state._clinicalStep = 1;
@@ -5984,7 +6599,7 @@
         // Step 4: Treatment (30s)
         if (elapsedSec >= 30 && state._clinicalPhase < 3) {
           state._clinicalPhase = 3;
-          applyStageControls(s); 
+          applyStageControls(s);
           addLog('⚠ TREATMENT PHASE: Tactical controls unlocked in right panel.', 'warn');
         }
       } else {
@@ -6394,7 +7009,7 @@
       document.getElementById('summary-table').innerHTML = tableHTML;
 
       // Overall grade & Threshold Logic (50% threshold)
-      const maxPerCase = 140; 
+      const maxPerCase = 140;
       const maxPossible = STAGES.length * maxPerCase;
       const percentage = (totalScore / maxPossible) * 100;
       const success = percentage >= 50;
@@ -6590,7 +7205,7 @@
         btn.textContent = optLabel;
         btn.onclick = () => {
           overlay.style.display = 'none';
-          
+
           if (state.stage === 6) {
             if (qIdx >= 0) {
               if (state._tasks) state._tasks[qIdx].done = true;
@@ -6620,15 +7235,15 @@
       renderTasks();
       addLog(`📋 NEW TASK: ${label} is now available.`, 'warn');
     }
-    
+
     function renderTasks() {
       const container = document.getElementById('task-items-container');
       const panel = document.getElementById('case7-tasks');
       if (!container || !panel) return;
-      
+
       panel.style.display = (state.stage === 6 && state.running) ? 'block' : 'none';
       container.innerHTML = '';
-      
+
       if (!state._tasks) return;
       Object.entries(state._tasks).forEach(([idx, task]) => {
         const btn = document.createElement('button');
@@ -6638,7 +7253,7 @@
         container.appendChild(btn);
       });
     }
-    
+
     function updateLiveReadouts() {
       const el = document.getElementById('live-readouts');
       const hint = document.getElementById('stage-objective-hint');
@@ -6798,6 +7413,22 @@
       if (state.stage + 1 < STAGES.length) {
         state.caseUnlocked[state.stage + 1] = true;
       }
+
+      // Sync Progress to Firebase
+      try {
+        const score = calculateFinalScore();
+        state.caseScores[state.stage] = { score: score, grade: 'S' };
+        updateDock(state.stage);
+
+        import('./firebase_config.js').then(m => {
+          m.syncStudentProgress(state.userUid, {
+            caseIndex: state.stage,
+            score: score,
+            isComplete: true
+          });
+        });
+      } catch (e) { console.error("Firebase sync failed:", e); }
+
       setRecovery(false);
     }
 
@@ -7552,13 +8183,13 @@
         const ft = state._activeVariant?.faultType || '';
         const cellCount = 35;
         const rng = _bioNet.rng;
-        
+
         for (let i = 0; i < cellCount; i++) {
           const angle = (i / cellCount) * Math.PI * 2 + rng() * 0.2;
           const dist = 30 + rng() * (cellRadius * 0.95);
           const px = cx + Math.cos(angle) * dist;
           const py = cy + Math.sin(angle) * dist;
-          
+
           const cell = {
             id: i,
             x: px, y: py, baseX: px, baseY: py,
@@ -7580,7 +8211,7 @@
 
           // Variation-specific cell seeding
           if (ft === 'hypoxiaResistance') {
-            const distCenter = Math.sqrt((px - cx)**2 + (py - cy)**2);
+            const distCenter = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
             if (distCenter < cellRadius * 0.35) {
               cell.isCancer = true;
               cell.isHypoxic = true;
@@ -7589,7 +8220,7 @@
               cell.isVessel = true; // Healthy vessel to protect
             }
           } else if (ft === 'bnctSimulation') {
-            const distCenter = Math.sqrt((px - cx)**2 + (py - cy)**2);
+            const distCenter = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
             if (distCenter < cellRadius * 0.4) {
               cell.isCancer = true;
               cell.hasBoron = true;
@@ -7603,7 +8234,7 @@
 
           state._therapyCells.push(cell);
         }
-        
+
         state._radTracks = [];
         state._radSourcePos = { x: 50, y: 50 }; // Default top-left source
         state._doseMultiplier = 1.0;
@@ -7619,7 +8250,7 @@
         const cellCount = 85;
         const ft = state._activeVariant?.faultType || '';
         const rng = _bioNet.rng;
-        
+
         for (let i = 0; i < cellCount; i++) {
           let px, py, isCancer = false;
           isCancer = i < 18;
@@ -7636,7 +8267,7 @@
           }
 
           const distFromCenter = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
-          
+
           state._lipoCells.push({
             x: px, y: py, baseX: px, baseY: py,
             r: isCancer ? 18 + rng() * 8 : 13 + rng() * 5,
@@ -7662,10 +8293,10 @@
         const cellCount = 85;
         const ft = state._activeVariant?.faultType || '';
         const rng = _bioNet.rng;
-        
+
         for (let i = 0; i < cellCount; i++) {
           let px, py, isCancer = false, isGermline = false, isStochastic = false, isDeterministic = false;
-          
+
           // Target Layout: Cancer surrounded by Normal Cells
           isCancer = i < 18;
           if (isCancer) {
@@ -8739,17 +9370,17 @@
       // Define 9 neurons in 3 loose clusters
       const neurons = [
         // Cluster A — left (input/afferent)
-        { cx: 140, cy: 200, wobbles: [14,-8,16,-5,11,-12,9,-7], dCount: 9, sR: 38, id: 0, cluster: 'A' },
-        { cx: 95,  cy: 350, wobbles: [12,-11,15,-6,10,-9,8,-13], dCount: 8, sR: 34, id: 1, cluster: 'A' },
-        { cx: 200, cy: 470, wobbles: [16,-7,13,-9,12,-6,10,-11], dCount: 10, sR: 32, id: 2, cluster: 'A' },
+        { cx: 140, cy: 200, wobbles: [14, -8, 16, -5, 11, -12, 9, -7], dCount: 9, sR: 38, id: 0, cluster: 'A' },
+        { cx: 95, cy: 350, wobbles: [12, -11, 15, -6, 10, -9, 8, -13], dCount: 8, sR: 34, id: 1, cluster: 'A' },
+        { cx: 200, cy: 470, wobbles: [16, -7, 13, -9, 12, -6, 10, -11], dCount: 10, sR: 32, id: 2, cluster: 'A' },
         // Cluster B — center (interneurons)
-        { cx: 400, cy: 150, wobbles: [18,-9,15,-7,13,-16,11,-8], dCount: 11, sR: 42, id: 3, cluster: 'B' },
-        { cx: 420, cy: 320, wobbles: [15,-12,17,-8,14,-10,12,-9], dCount: 12, sR: 48, id: 4, cluster: 'B' },
-        { cx: 380, cy: 490, wobbles: [13,-10,16,-6,11,-14,9,-8], dCount: 9,  sR: 36, id: 5, cluster: 'B' },
+        { cx: 400, cy: 150, wobbles: [18, -9, 15, -7, 13, -16, 11, -8], dCount: 11, sR: 42, id: 3, cluster: 'B' },
+        { cx: 420, cy: 320, wobbles: [15, -12, 17, -8, 14, -10, 12, -9], dCount: 12, sR: 48, id: 4, cluster: 'B' },
+        { cx: 380, cy: 490, wobbles: [13, -10, 16, -6, 11, -14, 9, -8], dCount: 9, sR: 36, id: 5, cluster: 'B' },
         // Cluster C — right (efferent/output)
-        { cx: 670, cy: 210, wobbles: [14,-9,12,-7,16,-8,10,-12], dCount: 8, sR: 36, id: 6, cluster: 'C' },
-        { cx: 730, cy: 380, wobbles: [17,-8,14,-10,13,-7,11,-9], dCount: 10, sR: 40, id: 7, cluster: 'C' },
-        { cx: 620, cy: 510, wobbles: [11,-13,15,-7,12,-10,9,-8], dCount: 8, sR: 34, id: 8, cluster: 'C' },
+        { cx: 670, cy: 210, wobbles: [14, -9, 12, -7, 16, -8, 10, -12], dCount: 8, sR: 36, id: 6, cluster: 'C' },
+        { cx: 730, cy: 380, wobbles: [17, -8, 14, -10, 13, -7, 11, -9], dCount: 10, sR: 40, id: 7, cluster: 'C' },
+        { cx: 620, cy: 510, wobbles: [11, -13, 15, -7, 12, -10, 9, -8], dCount: 8, sR: 34, id: 8, cluster: 'C' },
       ];
 
       // Synaptic connections between neurons (source → target)
@@ -8844,7 +9475,7 @@
         // Probabilistic: faster spawn when stronger signal
         if (Math.random() < 0.025 + signalStrength * 0.06) {
           // Pick a synapse weighted by cluster order (A→B→C propagation)
-          const candidates = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17];
+          const candidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
           const idx = candidates[Math.floor(Math.random() * candidates.length)];
           net.signals.push({ synapseIdx: idx, progress: 0, strength: 0.6 + signalStrength * 0.4, speed: 0.008 + signalStrength * 0.014 });
         }
@@ -8897,7 +9528,7 @@
       // ── HELPER: EVAL CUBIC BEZIER ─────────────────────────────────────────
       const cubicPt = (t0, x0, cp1x, cp2x, x1) => {
         const u = 1 - t0;
-        return u*u*u*x0 + 3*u*u*t0*cp1x + 3*u*t0*t0*cp2x + t0*t0*t0*x1;
+        return u * u * u * x0 + 3 * u * u * t0 * cp1x + 3 * u * t0 * t0 * cp2x + t0 * t0 * t0 * x1;
       };
 
       // ── DRAW AXONS (behind somas) ─────────────────────────────────────────
@@ -9209,7 +9840,7 @@
       // ── CLUSTER LABELS ────────────────────────────────────────────────────
       ctx.save();
       ctx.font = `bold ${ts(8)}px Share Tech Mono`;
-      ctx.fillStyle = 'rgba(59,130,246,0.5)';  ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(59,130,246,0.5)'; ctx.textAlign = 'center';
       ctx.fillText('AFFERENT CLUSTER', tx(165), ty(555));
       ctx.fillStyle = 'rgba(124,58,237,0.5)';
       ctx.fillText('INTERNEURONS', tx(400), ty(555));
@@ -10083,10 +10714,10 @@
     function drawLiposomeScene(t, memInt, viab) {
       const ft = state._activeVariant?.faultType || '';
       const canvasW = canvas.width, canvasH = canvas.height;
-      const coverage = state.membrane; 
-      
+      const coverage = state.membrane;
+
       ctx.fillStyle = '#050a10'; ctx.fillRect(0, 0, canvasW, canvasH);
-      
+
       if (ft === 'thermoRelease') {
         const rad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cellRadius * 0.7);
         rad.addColorStop(0, 'rgba(239, 68, 68, 0.18)');
@@ -10114,7 +10745,7 @@
         ctx.save();
         const hpFrac = cell.hp / 100;
         const baseColor = cell.isCancer ? [168, 85, 247] : [14, 165, 233];
-        
+
         if (cell.isMacrophage) {
           ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
           ctx.beginPath(); ctx.arc(cell.x, cell.y, cell.r + 4, 0, Math.PI * 2); ctx.stroke();
@@ -10126,14 +10757,14 @@
           for (let a = 0; a < Math.PI * 2; a += 0.2) {
             const r = cell.r * (1 + Math.sin(a * 5 + t * 2) * 0.12);
             a === 0 ? ctx.moveTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r)
-                    : ctx.lineTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r);
+              : ctx.lineTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r);
           }
         } else {
           ctx.arc(cell.x, cell.y, cell.r, 0, Math.PI * 2);
         }
         ctx.fillStyle = `rgba(${baseColor.join(',')}, ${0.3 + hpFrac * 0.6})`;
         ctx.fill();
-        
+
         if (cell.hasReceptors) {
           ctx.strokeStyle = '#fde047'; ctx.lineWidth = 2;
           for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
@@ -10222,7 +10853,7 @@
       // Helper: cubic bezier eval
       const apCubicPt = (t0, x0, cp1x, cp2x, x1) => {
         const u = 1 - t0;
-        return u*u*u*x0 + 3*u*u*t0*cp1x + 3*u*t0*t0*cp2x + t0*t0*t0*x1;
+        return u * u * u * x0 + 3 * u * u * t0 * cp1x + 3 * u * t0 * t0 * cp2x + t0 * t0 * t0 * x1;
       };
       const dW = 850, dH = 590;
       const apScale = Math.min(W / dW, H / (dH + 120)) * 0.88; // leave room for waveform panel
@@ -10625,127 +11256,127 @@
         const tr = state._radTracks[i];
         const progress = (Date.now() - tr.startTime) / tr.duration;
         if (progress >= 1) { state._radTracks.splice(i, 1); continue; }
-        
+
         // Variant-Specific Particle Identity
         let pCol = 'rgba(220, 38, 38,'; // Default Red
         const vId = state._activeVariant?.id || '';
         if (vId.includes('rad-A')) pCol = 'rgba(249, 115, 22,'; // Alpha Orange
         if (vId.includes('rad-C')) pCol = 'rgba(234, 179, 8,'; // Beta Yellow
         if (vId.includes('rad-B')) pCol = 'rgba(168, 85, 247,'; // Gamma Purple
-        
+
         // Realism Enhancement: Scattering & Secondary Ionization
         if (Math.random() < 0.05) { // 5% scatter rate
           const scatterAngle = Math.random() * Math.PI * 2;
           ctx.strokeStyle = `${pCol} 0.2)`; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(tr.x, tr.y); 
+          ctx.beginPath(); ctx.moveTo(tr.x, tr.y);
           ctx.lineTo(tr.x + Math.cos(scatterAngle) * 20, tr.y + Math.sin(scatterAngle) * 20); ctx.stroke();
         }
 
         ctx.strokeStyle = `${pCol} ${0.4 * (1 - progress)})`;
-        ctx.lineWidth = vId.includes('rad-A') ? 5 : 2; 
+        ctx.lineWidth = vId.includes('rad-A') ? 5 : 2;
         ctx.beginPath(); ctx.moveTo(tr.x, tr.y); ctx.lineTo(tr.tx, tr.ty); ctx.stroke();
-        
+
         ctx.strokeStyle = `${pCol} ${0.1 * (1 - progress)})`;
         ctx.lineWidth = 8;
         ctx.beginPath(); ctx.moveTo(tr.x, tr.y); ctx.lineTo(tr.tx, tr.ty); ctx.stroke();
-        
+
         // Head spark (Ionization)
         ctx.fillStyle = progress < 0.3 ? '#fff' : `${pCol} 1)`;
-        ctx.beginPath(); ctx.arc(tr.x + (tr.tx - tr.x) * progress, tr.y + (tr.ty - tr.y) * progress, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(tr.x + (tr.tx - tr.x) * progress, tr.y + (tr.ty - tr.y) * progress, 2, 0, Math.PI * 2); ctx.fill();
       }
 
       // 3. Cells (Biological Rendering)
       if (state._dnaCells && state._dnaCells.length > 0) {
         for (const cell of state._dnaCells) {
-        cell.phase += 0.012;
-        cell.x = cell.baseX + Math.sin(cell.phase) * 1.5;
-        cell.y = cell.baseY + Math.cos(cell.phase * 0.7) * 1.5;
+          cell.phase += 0.012;
+          cell.x = cell.baseX + Math.sin(cell.phase) * 1.5;
+          cell.y = cell.baseY + Math.cos(cell.phase * 0.7) * 1.5;
 
-        ctx.save();
-        const hpFrac = cell.hp / 100;
-        let baseColor = [14, 165, 233]; // Blue (Healthy)
-        if (cell.isCancer) baseColor = [168, 85, 247]; // Purple (Cancer)
-        if (cell.isGermline) baseColor = [220, 38, 38]; // Red (Germline)
-        if (cell.isDeterministic) baseColor = [153, 27, 27]; // Dark Red (Determ)
+          ctx.save();
+          const hpFrac = cell.hp / 100;
+          let baseColor = [14, 165, 233]; // Blue (Healthy)
+          if (cell.isCancer) baseColor = [168, 85, 247]; // Purple (Cancer)
+          if (cell.isGermline) baseColor = [220, 38, 38]; // Red (Germline)
+          if (cell.isDeterministic) baseColor = [153, 27, 27]; // Dark Red (Determ)
 
-        // Glow
-        const glow = ctx.createRadialGradient(cell.x, cell.y, 0, cell.x, cell.y, Math.max(0.1, cell.r * 1.8));
-        glow.addColorStop(0, `rgba(${baseColor.join(',')}, ${0.15 * hpFrac})`);
-        glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r * 1.8), 0, Math.PI * 2); ctx.fill();
+          // Glow
+          const glow = ctx.createRadialGradient(cell.x, cell.y, 0, cell.x, cell.y, Math.max(0.1, cell.r * 1.8));
+          glow.addColorStop(0, `rgba(${baseColor.join(',')}, ${0.15 * hpFrac})`);
+          glow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r * 1.8), 0, Math.PI * 2); ctx.fill();
 
-        // Lead Shield Indicator (Premium Glass Dome)
-        if (cell.shielded) {
-          const sGrad = ctx.createRadialGradient(cell.x, cell.y, Math.max(0.1, cell.r), cell.x, cell.y, Math.max(0.1, cell.r + 10));
-          sGrad.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
-          sGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
-          ctx.fillStyle = sGrad;
-          ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r + 10), 0, Math.PI * 2); ctx.fill();
-          
-          ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
-          ctx.setLineDash([5, 15]);
-          ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r + 8), t, t + Math.PI * 0.5); ctx.stroke();
-          ctx.setLineDash([]);
-        }
+          // Lead Shield Indicator (Premium Glass Dome)
+          if (cell.shielded) {
+            const sGrad = ctx.createRadialGradient(cell.x, cell.y, Math.max(0.1, cell.r), cell.x, cell.y, Math.max(0.1, cell.r + 10));
+            sGrad.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
+            sGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
+            ctx.fillStyle = sGrad;
+            ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r + 10), 0, Math.PI * 2); ctx.fill();
 
-        // Cell Body
-        ctx.beginPath();
-        if (cell.isCancer || cell.isDeterministic) {
-          for (let a = 0; a < Math.PI * 2; a += 0.2) {
-            const r = Math.max(0.1, cell.r * (1 + Math.sin(a * 5 + t * 2) * 0.12));
-            a === 0 ? ctx.moveTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r)
-                    : ctx.lineTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r);
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
+            ctx.setLineDash([5, 15]);
+            ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r + 8), t, t + Math.PI * 0.5); ctx.stroke();
+            ctx.setLineDash([]);
           }
-        } else {
-          ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r), 0, Math.PI * 2);
-        }
-        // Dose-Dependent Color Shift (Realism: Tissue Darkening)
-        const doseDarken = Math.max(0.1, 1 - (100 - cell.hp) / 150);
-        ctx.fillStyle = `rgba(${baseColor[0] * doseDarken}, ${baseColor[1] * doseDarken}, ${baseColor[2] * doseDarken}, ${0.3 + hpFrac * 0.6})`;
-        ctx.fill();
-        ctx.strokeStyle = `rgba(255,255,255,${0.1 + hpFrac * 0.2})`; ctx.stroke();
 
-        // Nucleus
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r * cell.nucleusSize), 0, Math.PI * 2); ctx.fill();
-
-        // DNA Double-Helix Visualization
-        const strandCount = 3;
-        for (let s = 0; s < strandCount; s++) {
-          const sx = cell.x - 6;
-          const sy = cell.y - 8 + (s * 8);
-          ctx.lineWidth = 1;
-          // Fragment based on damage
-          const isBroken = (100 - cell.hp) > (s * 30 + 10);
-          
-          if (!isBroken) {
-            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-            ctx.beginPath();
-            for (let i = 0; i < 12; i++) {
-              const x = sx + i;
-              const y = sy + Math.sin(t * 5 + i * 0.8) * 3;
-              i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          // Cell Body
+          ctx.beginPath();
+          if (cell.isCancer || cell.isDeterministic) {
+            for (let a = 0; a < Math.PI * 2; a += 0.2) {
+              const r = Math.max(0.1, cell.r * (1 + Math.sin(a * 5 + t * 2) * 0.12));
+              a === 0 ? ctx.moveTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r)
+                : ctx.lineTo(cell.x + Math.cos(a) * r, cell.y + Math.sin(a) * r);
             }
-            ctx.stroke();
-            // Counter strand
-            ctx.strokeStyle = 'rgba(14, 165, 233, 0.3)';
-            ctx.beginPath();
-            for (let i = 0; i < 12; i++) {
-              const x = sx + i;
-              const y = sy + Math.sin(t * 5 + i * 0.8 + Math.PI) * 3;
-              i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            }
-            ctx.stroke();
           } else {
-            // Broken DNA fragments
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
-            ctx.beginPath(); ctx.arc(sx + 2, sy, 1, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(sx + 10, sy + 3, 1, 0, Math.PI*2); ctx.fill();
+            ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r), 0, Math.PI * 2);
           }
+          // Dose-Dependent Color Shift (Realism: Tissue Darkening)
+          const doseDarken = Math.max(0.1, 1 - (100 - cell.hp) / 150);
+          ctx.fillStyle = `rgba(${baseColor[0] * doseDarken}, ${baseColor[1] * doseDarken}, ${baseColor[2] * doseDarken}, ${0.3 + hpFrac * 0.6})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(255,255,255,${0.1 + hpFrac * 0.2})`; ctx.stroke();
+
+          // Nucleus
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.beginPath(); ctx.arc(cell.x, cell.y, Math.max(0.1, cell.r * cell.nucleusSize), 0, Math.PI * 2); ctx.fill();
+
+          // DNA Double-Helix Visualization
+          const strandCount = 3;
+          for (let s = 0; s < strandCount; s++) {
+            const sx = cell.x - 6;
+            const sy = cell.y - 8 + (s * 8);
+            ctx.lineWidth = 1;
+            // Fragment based on damage
+            const isBroken = (100 - cell.hp) > (s * 30 + 10);
+
+            if (!isBroken) {
+              ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+              ctx.beginPath();
+              for (let i = 0; i < 12; i++) {
+                const x = sx + i;
+                const y = sy + Math.sin(t * 5 + i * 0.8) * 3;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+              // Counter strand
+              ctx.strokeStyle = 'rgba(14, 165, 233, 0.3)';
+              ctx.beginPath();
+              for (let i = 0; i < 12; i++) {
+                const x = sx + i;
+                const y = sy + Math.sin(t * 5 + i * 0.8 + Math.PI) * 3;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+            } else {
+              // Broken DNA fragments
+              ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
+              ctx.beginPath(); ctx.arc(sx + 2, sy, 1, 0, Math.PI * 2); ctx.fill();
+              ctx.beginPath(); ctx.arc(sx + 10, sy + 3, 1, 0, Math.PI * 2); ctx.fill();
+            }
+          }
+          ctx.restore();
         }
-        ctx.restore();
       }
-    }
 
       // 4. ROS Radicals
       const targetROS = Math.floor((state._ros || 0) / 2);
@@ -10793,17 +11424,17 @@
 
         ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 9px Share Tech Mono'; ctx.textAlign = 'left';
         ctx.fillText('☢ GENOMIC INTEGRITY MONITOR', rx + 12, ry + 16);
-        
+
         const direct = Math.round(state._dnaDirectDmg || 0);
         const indirect = Math.round(state._dnaIndirectDmg || 0);
         ctx.fillStyle = '#fff'; ctx.font = '12px Share Tech Mono';
         ctx.fillText(`DIRECT DAMAGE: ${direct}%`, rx + 12, ry + 36);
         ctx.fillText(`INDIRECT (ROS): ${indirect}%`, rx + 12, ry + 54);
-        
+
         const h2o2Val = Math.round(state._dnaH2O2 || 0);
         ctx.fillStyle = h2o2Val > 30 ? '#f59e0b' : '#fff';
         ctx.fillText(`H2O2 BUILDUP: ${h2o2Val}%`, rx + 12, ry + 72);
-        
+
         const status = state._repairOverwhelmed ? 'OVERLOADED' : 'ACTIVE';
         ctx.fillStyle = state._repairOverwhelmed ? '#ef4444' : '#10b981';
         ctx.font = 'bold 10px Share Tech Mono';
@@ -11013,9 +11644,9 @@
       if (ci >= 0) {
         // Clinical Redesign: Interactive Shielding
         if (state._clinicalPhase >= 3) {
-          const cells = (stressor === 'dnadamage') ? state._dnaCells : 
-                        (stressor === 'liposome') ? state._lipoCells : 
-                        state._therapyCells;
+          const cells = (stressor === 'dnadamage') ? state._dnaCells :
+            (stressor === 'liposome') ? state._lipoCells :
+              state._therapyCells;
           const cell = cells[ci];
           if (cell && !cell.isCancer) {
             cell.shielded = !cell.shielded;
