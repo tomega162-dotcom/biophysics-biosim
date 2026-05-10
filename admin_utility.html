@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioSim Admin | Access Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.2);
+            --text: #1e293b;
+            --text-dim: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            background: #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        /* PIN List */
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .pin-item {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            text-align: center;
+            position: relative;
+        }
+
+        .pin-item.admin {
+            border-color: var(--warn);
+            background: #fffbeb;
+            font-weight: 700;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-admin { background: var(--warn); color: white; }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-val {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Firebase Settings Area */
+        .config-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .config-modal {
+            background: white;
+            width: 500px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <span>🧬</span> BioSim Admin
+        </div>
+        <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
+        <div class="nav-item" onclick="showTab('pins')">🔑 PIN Management</div>
+        <div class="nav-item" onclick="showTab('students')">🎓 Student Records</div>
+        <div class="nav-item" onclick="showTab('settings')">⚙️ Firebase Config</div>
+    </div>
+
+    <div class="main">
+        
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard">
+            <div class="header">
+                <h1>Platform Overview</h1>
+                <div class="btn btn-outline" onclick="exportData()">📥 Export Analytics (CSV)</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-total-pins">301</div>
+                    <div class="stat-label">Total PINs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-used-pins">0</div>
+                    <div class="stat-label">Activated PINs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-total-trials">0</div>
+                    <div class="stat-label">Total Simulations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-expired">0</div>
+                    <div class="stat-label">Expired Accounts</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🚀 Getting Started</div>
+                <p>Follow these steps to initialize your secure laboratory platform:</p>
+                <ol>
+                    <li>Configure your <strong>Firebase Credentials</strong> in the Settings tab.</li>
+                    <li>Generate the <strong>PIN Pool</strong> in the PIN Management tab.</li>
+                    <li>Click <strong>"Push to Firestore"</strong> to activate the codes.</li>
+                    <li>Distribute the PINs to your students.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- PINS TAB -->
+        <div id="tab-pins" class="hidden">
+            <div class="header">
+                <h1>PIN Management</h1>
+                <div class="btn btn-primary" onclick="generatePins()">✨ Generate New Pool</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔑 Generated PIN Pool (300 Students + 1 Admin)</div>
+                <p style="color:var(--text-dim); margin-bottom: 20px;">
+                    Copy these PINs to distribute to students. Once pushed to Firebase, they will become active.
+                </p>
+                <div id="pin-container" class="pin-grid">
+                    <!-- PINs will appear here -->
+                    <div style="grid-column: 1/-1; text-align:center; padding: 40px; color:var(--text-dim);">
+                        No PINs generated yet. Click "Generate New Pool" to start.
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" id="btn-push-firestore" onclick="pushToFirestore()" disabled>
+                        📤 Push to Firestore (Live Activation)
+                    </button>
+                    <button class="btn btn-outline" onclick="copyAllPins()">
+                        📋 Copy All to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="tab-settings" class="hidden">
+            <div class="header">
+                <h1>System Configuration</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔥 Firebase Credentials</div>
+                <p>Enter your Firebase Project configuration below to link the platform to your database.</p>
+                
+                <div class="form-group">
+                    <label>Firebase Configuration Object (JSON)</label>
+                    <textarea id="firebase-config-json" rows="8" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "...", ... }'></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="saveConfig()">Save Configuration</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modals / Overlays -->
+    <div id="toast-container" style="position:fixed; bottom: 20px; right: 20px; z-index: 2000;"></div>
+
+    <script type="module">
+        import { db, auth } from './firebase_config.js';
+        import { doc, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let currentTab = 'dashboard';
+        let generatedPins = [];
+
+        window.showTab = function(tabId) {
+            document.getElementById(`tab-${currentTab}`).classList.add('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const target = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes(tabId.charAt(0).toUpperCase() + tabId.slice(1)));
+            if (target) target.classList.add('active');
+            currentTab = tabId;
+        }
+
+        // --- PIN GENERATION LOGIC ---
+        function generateRandomPin(length = 10) {
+            const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ"; 
+            const lower = "abcdefghijkmnopqrstuvwxyz"; 
+            const numbers = "23456789"; 
+            const special = "&#$*@!%";
+            
+            const all = upper + lower + numbers + special;
+            let pin = "";
+            
+            pin += upper[Math.floor(Math.random() * upper.length)];
+            pin += lower[Math.floor(Math.random() * lower.length)];
+            pin += numbers[Math.floor(Math.random() * numbers.length)];
+            pin += special[Math.floor(Math.random() * special.length)];
+            
+            const array = new Uint32Array(length - 4);
+            window.crypto.getRandomValues(array);
+            
+            for (let i = 0; i < array.length; i++) {
+                pin += all[array[i] % all.length];
+            }
+            return pin.split('').sort(() => 0.5 - Math.random()).join('');
+        }
+
+        window.generatePins = function() {
+            const pool = new Set();
+            const count = 300;
+            
+            while (pool.size < count) {
+                pool.add(generateRandomPin(10));
+            }
+            
+            const adminPin = generateRandomPin(12);
+            generatedPins = Array.from(pool);
+            
+            const container = document.getElementById('pin-container');
+            container.innerHTML = `
+                <div class="pin-item admin">
+                    ${adminPin}
+                    <div class="badge badge-admin">Master Admin</div>
+                </div>
+            `;
+            
+            generatedPins.forEach(pin => {
+                const el = document.createElement('div');
+                el.className = 'pin-item';
+                el.textContent = pin;
+                container.appendChild(el);
+            });
+            
+            generatedPins.unshift(adminPin);
+            document.getElementById('btn-push-firestore').disabled = false;
+            showToast("Successfully generated 301 unique secure PINs.", "success");
+        }
+
+        window.copyAllPins = function() {
+            if (generatedPins.length === 0) return;
+            const text = generatedPins.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("All PINs copied to clipboard.", "success");
+            });
+        }
+
+        window.pushToFirestore = async function() {
+            const btn = document.getElementById('btn-push-firestore');
+            btn.disabled = true;
+            btn.textContent = "⌛ Synchronizing...";
+            
+            try {
+                const batch = writeBatch(db);
+                
+                generatedPins.forEach((pin, index) => {
+                    const pinRef = doc(db, "accessPins", pin);
+                    batch.set(pinRef, {
+                        pinCode: pin,
+                        used: false,
+                        assignedTo: null,
+                        role: index === 0 ? "admin" : "student",
+                        trialLimit: 10,
+                        trialsUsed: 0,
+                        createdAt: serverTimestamp()
+                    });
+                });
+
+                await batch.commit();
+                showToast("Live Activation Complete! PINs are now active on Firestore.", "success");
+                btn.textContent = "✅ PINs Activated";
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to push. Check your Firebase config and permissions.", "danger");
+                btn.disabled = false;
+                btn.textContent = "📤 Retry Push to Firestore";
+            }
+        }
+
+        window.saveConfig = function() {
+            const config = document.getElementById('firebase-config-json').value;
+            try {
+                JSON.parse(config);
+                localStorage.setItem('biosim_firebase_config', config);
+                showToast("Firebase configuration saved. Please refresh the page.", "success");
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                showToast("Invalid JSON format.", "danger");
+            }
+        }
+
+        window.showToast = function(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${type === 'success' ? 'var(--success)' : (type === 'danger' ? 'var(--danger)' : 'var(--accent)')};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                margin-top: 10px;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                animation: slideIn 0.3s ease-out;
+                font-size: 14px;
+                font-weight: 600;
+            `;
+            toast.textContent = msg;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Initialize UI
+        const saved = localStorage.getItem('biosim_firebase_config');
+        if (saved) document.getElementById('firebase-config-json').value = saved;
+    </script>
+
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+
+</body>
+</html>
