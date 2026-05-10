@@ -170,3 +170,4 @@ export async function syncStudentProgress(studentUid, progressData) {
 }
 
 export { db, auth };
+// Cache Buster: Sun May 10 02:45:17 PM EEST 2026
