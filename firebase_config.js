@@ -54,8 +54,13 @@ export async function validateStudentPin(pin) {
         if (pinData.used && pinData.assignedTo) {
             const userRef = doc(db, "users", pinData.assignedTo);
             const userSnap = await getDoc(userRef);
-            const userData = userSnap.data();
+            
+            // Safety Check: If user record is missing (migration/schema change), allow re-registration
+            if (!userSnap.exists()) {
+                return { status: "NEW", data: pinData };
+            }
 
+            const userData = userSnap.data();
             return {
                 status: "RETURNING",
                 studentId: pinData.assignedTo,
