@@ -63,9 +63,7 @@
       align-items: center;
       justify-content: center;
     }
-    /* Only sim screen needs topbar offset */
-    #screen-sim.active ~ .topbar, #screen-sim.active { top: 64px; }
-    #screen-sim { top: 64px; }
+    /* Entry screen still full screen */
     #screen-entry { top: 0 !important; }
 
     .screen.active {
@@ -2491,58 +2489,57 @@
     </div>
   </div>
 
-  <div class="topbar" id="topbar" style="display:none; position:fixed; top:0; left:0; right:0; z-index:1000;">
-    <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
-    <div class="topbar-brand">BIOSIM</div>
-    <div class="topbar-sep"></div>
-    <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
-    <div class="topbar-sep"></div>
-    <div class="status-indicators">
-      <div class="status-block">
-        <div class="status-label" id="lbl-s1">Membrane</div>
-        <div class="status-bar-wrap">
-          <div class="status-bar">
-            <div class="status-bar-fill" id="bar-membrane" style="width:80%"></div>
-          </div>
-          <div class="status-val" id="val-membrane">80%</div>
-        </div>
-      </div>
-      <div class="status-block">
-        <div class="status-label" id="lbl-s2">ATP Energy</div>
-        <div class="status-bar-wrap">
-          <div class="status-bar">
-            <div class="status-bar-fill" id="bar-atp" style="width:90%;background:var(--accent2)"></div>
-          </div>
-          <div class="status-val" id="val-atp">90%</div>
-        </div>
-      </div>
-      <div class="status-block">
-        <div class="status-label" id="lbl-s3">Ion Balance</div>
-        <div class="status-bar-wrap">
-          <div class="status-bar">
-            <div class="status-bar-fill" id="bar-ion" style="width:70%;background:var(--yellow)"></div>
-          </div>
-          <div class="status-val" id="val-ion">70%</div>
-        </div>
-      </div>
-      <div class="status-block">
-        <div class="status-label" id="lbl-s4">Viability</div>
-        <div class="status-bar-wrap">
-          <div class="status-bar">
-            <div class="status-bar-fill" id="bar-viability" style="width:85%;background:var(--accent)"></div>
-          </div>
-          <div class="status-val" id="val-viability">85%</div>
-        </div>
-      </div>
-    </div>
-    <div class="timer-block">
-      <div class="timer-label">Time Remaining</div>
-      <div class="timer-val" id="timer-display">5:00</div>
-    </div>
-  </div>
-
   <!-- ===== MAIN SIM ===== -->
   <div id="screen-sim" class="screen">
+    <div class="topbar" id="topbar">
+      <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
+      <div class="topbar-brand">BIOSIM</div>
+      <div class="topbar-sep"></div>
+      <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
+      <div class="topbar-sep"></div>
+      <div class="status-indicators">
+        <div class="status-block">
+          <div class="status-label" id="lbl-s1">Membrane</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-bar-fill" id="bar-membrane" style="width:80%"></div>
+            </div>
+            <div class="status-val" id="val-membrane">80%</div>
+          </div>
+        </div>
+        <div class="status-block">
+          <div class="status-label" id="lbl-s2">ATP Energy</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-bar-fill" id="bar-atp" style="width:90%;background:var(--accent2)"></div>
+            </div>
+            <div class="status-val" id="val-atp">90%</div>
+          </div>
+        </div>
+        <div class="status-block">
+          <div class="status-label" id="lbl-s3">Ion Balance</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-bar-fill" id="bar-ion" style="width:70%;background:var(--yellow)"></div>
+            </div>
+            <div class="status-val" id="val-ion">70%</div>
+          </div>
+        </div>
+        <div class="status-block">
+          <div class="status-label" id="lbl-s4">Viability</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-bar-fill" id="bar-viability" style="width:85%;background:var(--accent)"></div>
+            </div>
+            <div class="status-val" id="val-viability">85%</div>
+          </div>
+        </div>
+      </div>
+      <div class="timer-block">
+        <div class="timer-label">Time Remaining</div>
+        <div class="timer-val" id="timer-display">5:00</div>
+      </div>
+    </div>
     <!-- Diagnosis Question Overlay -->
     <div id="diagnosis-overlay" class="diagnosis-overlay" style="display:none">
       <div class="diagnosis-modal">
@@ -5522,8 +5519,6 @@
       document.getElementById('screen-' + id).classList.add('active');
       // Show dock on all screens except entry
       document.getElementById('case-dock').style.display = id === 'entry' ? 'none' : 'flex';
-      // Show topbar ONLY during simulation
-      document.getElementById('topbar').style.display = id === 'sim' ? 'flex' : 'none';
     }
 
     // =====================================================================
