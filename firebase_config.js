@@ -40,6 +40,11 @@ auth = getAuth(app);
  */
 export async function validateStudentPin(pin) {
     try {
+        // Ensure we have a valid auth context before reading
+        if (!auth.currentUser) {
+            await signInAnonymously(auth);
+        }
+
         // 1. Check if PIN exists in the pool
         const pinRef = doc(db, "accessPins", pin);
         const pinSnap = await getDoc(pinRef);
