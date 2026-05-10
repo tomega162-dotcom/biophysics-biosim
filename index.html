@@ -1464,44 +1464,49 @@
       flex-shrink: 0;
     }
 
-    /* ===== ENHANCED TOOLTIPS (Phase 2) ===== */
+    /* ===== ENHANCED TOOLTIPS (Phase 2) — FIXED POSITION ===== */
     .ctrl-item {
       position: relative;
     }
 
+    /* Hide inline tooltips — they display in the fixed zone instead */
     .ctrl-tooltip {
+      display: none !important;
+    }
+
+    /* Fixed tooltip display zone at bottom of right panel */
+    #tooltip-display-zone {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
       font-family: var(--font-sci);
       font-size: 10px;
       color: var(--text-dim);
       line-height: 1.5;
-      padding: 8px 10px;
-      background: rgba(15, 23, 42, 0.92);
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.95);
       border: 1px solid var(--border2);
       border-left: 3px solid var(--accent);
       border-radius: 4px;
-      margin-top: 4px;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
-      pointer-events: none;
+      min-height: 48px;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+      transition: opacity 0.2s ease;
     }
 
-    .ctrl-item:hover .ctrl-tooltip,
-    .ctrl-tooltip.always-show {
-      max-height: 120px;
-      opacity: 1;
-      padding: 8px 10px;
+    #tooltip-display-zone:empty {
+      opacity: 0.4;
     }
 
-    .ctrl-tooltip .tt-concept {
+    #tooltip-display-zone .tt-concept {
       color: var(--accent);
       font-weight: 600;
       display: block;
       margin-bottom: 2px;
     }
 
-    .ctrl-tooltip .tt-effect {
+    #tooltip-display-zone .tt-effect {
       color: #94a3b8;
     }
 
@@ -2686,6 +2691,9 @@
               channels.</div>
           </div>
         </div>
+
+        <!-- Fixed Tooltip Display Zone -->
+        <div id="tooltip-display-zone"><span class="tt-concept">Parameter Info</span><span class="tt-effect">Hover over a slider to see its description.</span></div>
         <div class="ctrl-section-title" style="margin-top:4px">// Interventions</div>
         <div class="ctrl-group">
           <button class="inject-btn" id="inj-nutrient" onclick="inject('nutrient')">[ + ] Inject Nutrients</button>
@@ -3220,6 +3228,26 @@
 
   <!-- ===== CLINICAL TREATMENT PANEL ===== -->
   <script>
+    // ── Fixed Tooltip Display: Show parameter info in fixed zone on hover ──
+    document.addEventListener('DOMContentLoaded', function() {
+      const zone = document.getElementById('tooltip-display-zone');
+      if (!zone) return;
+      document.querySelectorAll('.ctrl-item').forEach(item => {
+        const tt = item.querySelector('.ctrl-tooltip');
+        if (!tt) return;
+        item.addEventListener('mouseenter', () => {
+          zone.innerHTML = tt.innerHTML || tt.textContent;
+        });
+        // Also trigger on slider input (touch/mobile)
+        const slider = item.querySelector('input[type=range]');
+        if (slider) {
+          slider.addEventListener('input', () => {
+            zone.innerHTML = tt.innerHTML || tt.textContent;
+          });
+        }
+      });
+    });
+
     // TEMPORARY ERROR REPORTER - REMOVE AFTER DEBUGGING
     window.onerror = function (msg, src, line, col, err) {
       document.title = 'JS_ERR:L' + line + ':' + msg;
