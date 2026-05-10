@@ -57,16 +57,16 @@
 
     .screen {
       position: absolute;
-      top: 64px;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
-    #screen-entry { top: 0 !important; } /* Entry screen still full screen */
+    /* Only sim screen needs topbar offset */
+    #screen-sim.active ~ .topbar, #screen-sim.active { top: 64px; }
+    #screen-sim { top: 64px; }
+    #screen-entry { top: 0 !important; }
 
     .screen.active {
       display: flex;
@@ -2431,8 +2431,8 @@
   <!-- ===== INTRO ===== -->
   <div id="screen-intro" class="screen">
     <div class="panel-screen">
-      <div style="text-align:center; margin-bottom: 24px;">
-        <img src="assets/bridge_capital_logo.png?v=2" style="height:64px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <div style="text-align:center; margin-bottom: 30px;">
+        <img src="assets/bridge_capital_logo.png?v=2" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
       </div>
       <div class="panel-tag">Mission Briefing</div>
       <div class="panel-title">You are a biotechnologist<br>operating in a live laboratory.</div>
@@ -2471,8 +2471,8 @@
   <!-- ===== CASE INTRO ===== -->
   <div id="screen-case" class="screen">
     <div class="panel-screen" id="case-panel-screen">
-      <div style="text-align:center; margin-bottom: 24px;">
-        <img src="assets/bridge_capital_logo.png?v=2" style="height:64px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <div style="text-align:center; margin-bottom: 30px;">
+        <img src="assets/bridge_capital_logo.png?v=2" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
       </div>
       <div class="panel-tag" id="case-tag">Stage 1 / 7</div>
       <div class="panel-title" id="case-title">OSMOTIC STRESS</div>
@@ -5522,8 +5522,8 @@
       document.getElementById('screen-' + id).classList.add('active');
       // Show dock on all screens except entry
       document.getElementById('case-dock').style.display = id === 'entry' ? 'none' : 'flex';
-      // Show topbar on all screens except entry
-      document.getElementById('topbar').style.display = id === 'entry' ? 'none' : 'flex';
+      // Show topbar ONLY during simulation
+      document.getElementById('topbar').style.display = id === 'sim' ? 'flex' : 'none';
     }
 
     // =====================================================================
