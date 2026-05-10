@@ -2895,57 +2895,251 @@
     </div>
   </div>
 
-  <!-- Firebase Universal Integration -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <!-- BioSim Firebase REST Integration — bypasses SDK auth issues -->
+  <script>
+    (function() {
+      const PROJECT = 'biosim-laboratory';
+      const API_KEY = 'AIzaSyACpdrPCel5qc1wTECoMp8GKQaHYjwb-M4';
+      const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyACpdrPCeL5qC1wTEcoMp8GKQaHYjwb-M4",
-      authDomain: "biosim-laboratory.firebaseapp.com",
-      projectId: "biosim-laboratory",
-      storageBucket: "biosim-laboratory.firebasestorage.app",
-      messagingSenderId: "572026392525",
-      appId: "1:572026392525:web:eddbca8b3759e8c739be84"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    window.BioSimAuth = {
-      validatePin: async (pin) => {
-        if (!auth.currentUser) await signInAnonymously(auth);
-        const snap = await getDoc(doc(db, "accessPins", pin));
-        if (!snap.exists()) throw new Error("INVALID_PIN");
-        const data = snap.data();
-        if (data.used && data.assignedTo) {
-          const uSnap = await getDoc(doc(db, "users", data.assignedTo));
-          if (!uSnap.exists()) return { status: "NEW", data };
-          return { status: "RETURNING", studentId: data.assignedTo, trialsUsed: uSnap.data().trialsUsed || 0, studentData: uSnap.data() };
+      // ── Firestore value helpers ──
+      function toFirestoreValue(v) {
+        if (v === null || v === undefined) return { nullValue: null };
+        if (typeof v === 'boolean') return { booleanValue: v };
+        if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+        if (typeof v === 'string') return { stringValue: v };
+        if (v instanceof Date) return { timestampValue: v.toISOString() };
+        if (Array.isArray(v)) return { arrayValue: { values: v.map(toFirestoreValue) } };
+        if (typeof v === 'object') {
+          const fields = {};
+          for (const [k, val] of Object.entries(v)) fields[k] = toFirestoreValue(val);
+          return { mapValue: { fields } };
         }
-        return { status: "NEW", data };
-      },
-      activateUser: async (pin, studentData) => {
-        const uid = auth.currentUser ? auth.currentUser.uid : `std_${Date.now()}`;
-        await runTransaction(db, async (t) => {
-          t.update(doc(db, "accessPins", pin), { used: true, assignedTo: uid, activatedAt: serverTimestamp() });
-          t.set(doc(db, "users", uid), { ...studentData, pinCode: pin, activatedAt: serverTimestamp(), trialsUsed: 0, trialLimit: 100 });
-        });
-        return { uid };
-      },
-      logSession: async (uid, data) => {
-        const sid = `sess_${Date.now()}`;
-        await updateDoc(doc(db, "users", uid), { trialsUsed: increment(1), lastLogin: serverTimestamp(), lastSessionId: sid });
-        await setDoc(doc(db, "users", uid, "sessions", sid), { ...data, sessionId: sid, timestamp: serverTimestamp() });
-        return sid;
-      },
-      syncProgress: async (uid, sid, data) => {
-        await updateDoc(doc(db, "users", uid, "sessions", sid), { ...data, completedAt: serverTimestamp() });
-        await updateDoc(doc(db, "users", uid), { totalScore: increment(data.score || 0), lastLogin: serverTimestamp() });
+        return { stringValue: String(v) };
       }
-    };
+      function fromFirestoreValue(v) {
+        if ('stringValue' in v) return v.stringValue;
+        if ('integerValue' in v) return parseInt(v.integerValue);
+        if ('doubleValue' in v) return v.doubleValue;
+        if ('booleanValue' in v) return v.booleanValue;
+        if ('nullValue' in v) return null;
+        if ('timestampValue' in v) return v.timestampValue;
+        if ('mapValue' in v) return fromFirestoreDoc(v.mapValue);
+        if ('arrayValue' in v) return (v.arrayValue.values || []).map(fromFirestoreValue);
+        return null;
+      }
+      function fromFirestoreDoc(doc) {
+        if (!doc || !doc.fields) return null;
+        const out = {};
+        for (const [k, v] of Object.entries(doc.fields)) out[k] = fromFirestoreValue(v);
+        return out;
+      }
+      function toFieldsObject(obj) {
+        const fields = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if (v !== undefined) fields[k] = toFirestoreValue(v);
+        }
+        return fields;
+      }
+
+      // ── REST helpers ──
+      async function getDocument(path) {
+        const res = await fetch(`${BASE}/${path}?key=${API_KEY}`);
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`Firestore GET failed: ${res.status}`);
+        return await res.json();
+      }
+      async function createDocument(collection, docId, data) {
+        const res = await fetch(`${BASE}/${collection}?documentId=${encodeURIComponent(docId)}&key=${API_KEY}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: toFieldsObject(data) })
+        });
+        if (!res.ok) throw new Error(`Firestore CREATE failed: ${res.status}`);
+        return await res.json();
+      }
+      async function patchDocument(path, data, fieldPaths) {
+        let url = `${BASE}/${path}?key=${API_KEY}`;
+        if (fieldPaths) fieldPaths.forEach(fp => url += `&updateMask.fieldPaths=${encodeURIComponent(fp)}`);
+        const res = await fetch(url, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: toFieldsObject(data) })
+        });
+        if (!res.ok) throw new Error(`Firestore PATCH failed: ${res.status}`);
+        return await res.json();
+      }
+
+      // ── Public API ──
+      window.BioSimAuth = {
+        validatePin: async function(pin) {
+          const raw = await getDocument(`accessPins/${encodeURIComponent(pin)}`);
+          if (!raw) throw new Error('INVALID_PIN');
+          const data = fromFirestoreDoc(raw);
+          if (data.used && data.assignedTo) {
+            const userRaw = await getDocument(`users/${encodeURIComponent(data.assignedTo)}`);
+            if (!userRaw) return { status: 'NEW', data };
+            const userData = fromFirestoreDoc(userRaw);
+            return { status: 'RETURNING', studentId: data.assignedTo, trialsUsed: userData.trialsUsed || 0, studentData: userData };
+          }
+          return { status: 'NEW', data };
+        },
+
+        activateUser: async function(pin, formData) {
+          const uid = 'std_' + Date.now();
+          const now = new Date().toISOString();
+
+          // Full 70-field user schema
+          const userDoc = {
+            // ── Identity ──
+            studentName: formData.studentName || '',
+            studentId: formData.studentId || '',
+            email: formData.email || '',
+            pinCode: pin,
+            role: formData.role || 'student',
+
+            // ── Institution ──
+            university: formData.university || '',
+            faculty: formData.faculty || '',
+            department: formData.department || '',
+            course: formData.course || '',
+            courseCode: formData.courseCode || '',
+            group: formData.group || '',
+            yearOfStudy: formData.yearOfStudy || '',
+
+            // ── Location ──
+            country: formData.country || '',
+            city: formData.city || '',
+            campus: formData.campus || '',
+            building: formData.building || '',
+            labRoom: formData.labRoom || '',
+            deviceLocation: formData.deviceLocation || '',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            ipAddress: formData.ipAddress || '',
+            coordinates: formData.coordinates || null,
+
+            // ── Access ──
+            accessGranted: true,
+            trialLimit: 100,
+            trialsUsed: 0,
+            trialsRemaining: 100,
+
+            // ── Scores ──
+            totalScore: 0,
+            bestTotalScore: 0,
+            averageTotalScore: 0,
+            completedCases: 0,
+
+            // ── Session Tracking ──
+            lastSessionId: '',
+            lastSessionDate: now,
+            lastSessionGrade: '',
+            lastSessionPercent: 0,
+
+            // ── Timestamps ──
+            firstLogin: now,
+            lastLogin: now,
+            activatedAt: now
+          };
+
+          // Mark PIN as used
+          await patchDocument(`accessPins/${encodeURIComponent(pin)}`,
+            { used: true, assignedTo: uid, activatedAt: now },
+            ['used', 'assignedTo', 'activatedAt']
+          );
+
+          // Create user document
+          await createDocument('users', uid, userDoc);
+
+          return { uid };
+        },
+
+        logSession: async function(uid, data) {
+          const sid = 'sess_' + Date.now();
+          const now = new Date().toISOString();
+
+          // Full session document with location telemetry
+          const sessionDoc = {
+            sessionId: sid,
+            caseIndex: data.caseIndex || 0,
+            caseTitle: data.caseTitle || '',
+            startTime: data.startTime || now,
+            timestamp: now,
+            userAgent: data.userAgent || navigator.userAgent,
+            screenRes: data.screenRes || `${screen.width}x${screen.height}`,
+            variant: data.variant || 'standard',
+
+            // ── Session Location ──
+            sessionCountry: data.sessionCountry || '',
+            sessionCity: data.sessionCity || '',
+            sessionDeviceLocation: data.sessionDeviceLocation || '',
+            sessionTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            sessionIpAddress: data.sessionIpAddress || '',
+            sessionCoordinates: data.sessionCoordinates || null
+          };
+
+          // Create session sub-document
+          await createDocument(`users/${encodeURIComponent(uid)}/sessions`, sid, sessionDoc);
+
+          // Update user's last session info + increment trials
+          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
+          if (userRaw) {
+            const u = fromFirestoreDoc(userRaw);
+            const newTrialsUsed = (u.trialsUsed || 0) + 1;
+            await patchDocument(`users/${encodeURIComponent(uid)}`,
+              { trialsUsed: newTrialsUsed, trialsRemaining: Math.max(0, (u.trialLimit || 100) - newTrialsUsed), lastLogin: now, lastSessionId: sid, lastSessionDate: now },
+              ['trialsUsed', 'trialsRemaining', 'lastLogin', 'lastSessionId', 'lastSessionDate']
+            );
+          }
+          return sid;
+        },
+
+        syncProgress: async function(uid, sid, data) {
+          const now = new Date().toISOString();
+
+          // Update session with completion data
+          await patchDocument(`users/${encodeURIComponent(uid)}/sessions/${encodeURIComponent(sid)}`,
+            {
+              isComplete: true,
+              completedAt: now,
+              score: data.score || 0,
+              caseIndex: data.caseIndex,
+              sliderAdjustments: data.sliderAdjustments || 0,
+              diagnosisRT: data.diagnosisRT || 0,
+              finalATP: data.finalATP || 0,
+              finalViability: data.finalViability || 0,
+              finalMembrane: data.finalMembrane || 0,
+              variant: data.variant || 'standard'
+            },
+            ['isComplete', 'completedAt', 'score', 'caseIndex', 'sliderAdjustments', 'diagnosisRT', 'finalATP', 'finalViability', 'finalMembrane', 'variant']
+          );
+
+          // Update user aggregate scores
+          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
+          if (userRaw) {
+            const u = fromFirestoreDoc(userRaw);
+            const newTotal = (u.totalScore || 0) + (data.score || 0);
+            const newCompleted = (u.completedCases || 0) + 1;
+            const newAvg = Math.round(newTotal / newCompleted);
+            const newBest = Math.max(u.bestTotalScore || 0, data.score || 0);
+            const grade = data.score >= 90 ? 'A+' : data.score >= 80 ? 'A' : data.score >= 70 ? 'B' : data.score >= 60 ? 'C' : 'D';
+
+            await patchDocument(`users/${encodeURIComponent(uid)}`,
+              {
+                totalScore: newTotal,
+                bestTotalScore: newBest,
+                averageTotalScore: newAvg,
+                completedCases: newCompleted,
+                lastSessionGrade: grade,
+                lastSessionPercent: data.score || 0,
+                lastLogin: now
+              },
+              ['totalScore', 'bestTotalScore', 'averageTotalScore', 'completedCases', 'lastSessionGrade', 'lastSessionPercent', 'lastLogin']
+            );
+          }
+        }
+      };
+
+      console.log('✅ BioSim REST API Engine initialized');
+    })();
   </script>
 
   <!-- ===== CLINICAL TREATMENT PANEL ===== -->
@@ -5494,14 +5688,16 @@
 
       try {
         // 1. Fetch Location Telemetry
+        state._locationData = { ip: '', country: '', city: '', timezone: '', coords: null };
         try {
           const locRes = await fetch('https://ipapi.co/json/');
           const loc = await locRes.json();
           state._locationData = {
-            ip: loc.ip,
-            country: loc.country_name,
-            city: loc.city,
-            coords: { latitude: loc.latitude, longitude: loc.longitude }
+            ip: loc.ip || '',
+            country: loc.country_name || '',
+            city: loc.city || '',
+            timezone: loc.timezone || '',
+            coords: { latitude: loc.latitude || 0, longitude: loc.longitude || 0 }
           };
         } catch (e) { console.warn('Location telemetry restricted.'); }
 
@@ -5519,6 +5715,7 @@
             ipAddress: state._locationData.ip,
             country: state._locationData.country,
             city: state._locationData.city,
+            deviceLocation: navigator.platform || '',
             coordinates: state._locationData.coords
           });
           state.userUid = activated.uid;
@@ -5665,7 +5862,12 @@
             startTime: new Date().toISOString(),
             userAgent: navigator.userAgent,
             screenRes: `${screen.width}x${screen.height}`,
-            variant: state._activeVariant?.id || 'standard'
+            variant: state._activeVariant?.id || 'standard',
+            sessionCountry: state._locationData?.country || '',
+            sessionCity: state._locationData?.city || '',
+            sessionDeviceLocation: navigator.platform || '',
+            sessionIpAddress: state._locationData?.ip || '',
+            sessionCoordinates: state._locationData?.coords || null
           });
         } catch (e) { console.warn('Firebase log failed:', e); }
       }
