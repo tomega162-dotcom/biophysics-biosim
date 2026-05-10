@@ -422,13 +422,13 @@
                 pool.add(generateRandomPin(10));
             }
             
-            const adminPin = generateRandomPin(12);
+            const adminPin = "B#8&zP9!kL2$"; // Standardized Master PIN
             generatedPins = Array.from(pool);
             
             const container = document.getElementById('pin-container');
             container.innerHTML = `
                 <div class="pin-item admin">
-                    ${adminPin}
+                    B#8&zP9!kL2$
                     <div class="badge badge-admin">Master Admin</div>
                 </div>
             `;
