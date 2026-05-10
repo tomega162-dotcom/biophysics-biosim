@@ -2373,6 +2373,54 @@
             </div>
           </div>
 
+          <!-- Email -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Email</div>
+              <input class="field-input" id="input-email" type="email" placeholder="Enter your email..." autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Group -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Group</div>
+              <input class="field-input" id="input-group" type="text" placeholder="Enter your group (e.g. A1, B2)..." autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Year of Study -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Year of Study</div>
+              <input class="field-input" id="input-year" type="text" placeholder="Enter year (e.g. 1st, 2nd, 3rd)..." autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Campus -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Campus</div>
+              <input class="field-input" id="input-campus" type="text" placeholder="Enter campus name..." autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Building -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Building</div>
+              <input class="field-input" id="input-building" type="text" placeholder="Enter building name..." autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Lab Room -->
+          <div class="entry-info-item">
+            <div class="field-group">
+              <div class="field-label">Lab Room</div>
+              <input class="field-input" id="input-labroom" type="text" placeholder="Enter lab room number..." autocomplete="off">
+            </div>
+          </div>
+
           <!-- Secure Access PIN (BIN) -->
           <div class="entry-info-item">
             <div class="field-group">
@@ -3053,12 +3101,18 @@
         },
 
         logSession: async function(uid, data) {
-          const sid = 'sess_' + Date.now();
           const now = new Date().toISOString();
+
+          // Get current trial count for sequential numbering
+          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
+          const u = userRaw ? fromFirestoreDoc(userRaw) : {};
+          const trialNum = (u.trialsUsed || 0) + 1;
+          const sid = 'session_' + String(trialNum).padStart(3, '0');
 
           // Full session document with location telemetry
           const sessionDoc = {
             sessionId: sid,
+            sessionNumber: trialNum,
             caseIndex: data.caseIndex || 0,
             caseTitle: data.caseTitle || '',
             startTime: data.startTime || now,
@@ -3066,6 +3120,8 @@
             userAgent: data.userAgent || navigator.userAgent,
             screenRes: data.screenRes || `${screen.width}x${screen.height}`,
             variant: data.variant || 'standard',
+            isComplete: false,
+            score: 0,
 
             // ── Session Location ──
             sessionCountry: data.sessionCountry || '',
@@ -3080,15 +3136,12 @@
           await createDocument(`users/${encodeURIComponent(uid)}/sessions`, sid, sessionDoc);
 
           // Update user's last session info + increment trials
-          const userRaw = await getDocument(`users/${encodeURIComponent(uid)}`);
-          if (userRaw) {
-            const u = fromFirestoreDoc(userRaw);
-            const newTrialsUsed = (u.trialsUsed || 0) + 1;
-            await patchDocument(`users/${encodeURIComponent(uid)}`,
-              { trialsUsed: newTrialsUsed, trialsRemaining: Math.max(0, (u.trialLimit || 100) - newTrialsUsed), lastLogin: now, lastSessionId: sid, lastSessionDate: now },
-              ['trialsUsed', 'trialsRemaining', 'lastLogin', 'lastSessionId', 'lastSessionDate']
-            );
-          }
+          const newTrialsUsed = trialNum;
+          await patchDocument(`users/${encodeURIComponent(uid)}`,
+            { trialsUsed: newTrialsUsed, trialsRemaining: Math.max(0, (u.trialLimit || 100) - newTrialsUsed), lastLogin: now, lastSessionId: sid, lastSessionDate: now },
+            ['trialsUsed', 'trialsRemaining', 'lastLogin', 'lastSessionId', 'lastSessionDate']
+          );
+
           return sid;
         },
 
@@ -5707,11 +5760,17 @@
           const activated = await window.BioSimAuth.activateUser(pin, {
             studentName: nm,
             studentId: id,
+            email: document.getElementById('input-email')?.value.trim() || '',
             university: document.getElementById('input-university')?.value.trim() || '',
             faculty: document.getElementById('input-faculty')?.value.trim() || '',
             department: document.getElementById('input-department')?.value.trim() || '',
             course: document.getElementById('input-course')?.value.trim() || '',
             courseCode: document.getElementById('input-course-code')?.value.trim() || '',
+            group: document.getElementById('input-group')?.value.trim() || '',
+            yearOfStudy: document.getElementById('input-year')?.value.trim() || '',
+            campus: document.getElementById('input-campus')?.value.trim() || '',
+            building: document.getElementById('input-building')?.value.trim() || '',
+            labRoom: document.getElementById('input-labroom')?.value.trim() || '',
             ipAddress: state._locationData.ip,
             country: state._locationData.country,
             city: state._locationData.city,
