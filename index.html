@@ -2325,14 +2325,11 @@
             </div>
           </div>
 
-          <!-- Secure Access PIN -->
+          <!-- Student ID (editable) -->
           <div class="entry-info-item">
             <div class="field-group">
-              <div class="field-label">Secure Access PIN</div>
-              <div class="bin-code-display">
-                <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15" autocomplete="off">
-                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
-              </div>
+              <div class="field-label">Student ID</div>
+              <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..." autocomplete="off">
             </div>
           </div>
 
@@ -2376,13 +2373,13 @@
             </div>
           </div>
 
-          <!-- BIN Code (non-functional / display only) -->
+          <!-- Secure Access PIN (BIN) -->
           <div class="entry-info-item">
             <div class="field-group">
-              <div class="field-label">BIN Code</div>
+              <div class="field-label">Secure Access PIN (BIN)</div>
               <div class="bin-code-display">
-                <input class="field-input" id="input-bin" type="text" placeholder="— — — —" disabled readonly>
-                <span class="bin-tag">Display Only</span>
+                <input class="field-input" id="input-bin" type="password" placeholder="••••••••" maxlength="15" autocomplete="off">
+                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
               </div>
             </div>
           </div>
@@ -5431,10 +5428,11 @@
     }
     async function startEntry() {
       const nm = document.getElementById('input-name').value.trim();
-      const pin = document.getElementById('input-pin').value.trim();
+      const id = document.getElementById('input-id').value.trim();
+      const pin = document.getElementById('input-bin').value.trim(); // Read from BIN field
 
       if (!nm || !pin) {
-        _showToast('Please enter both your Full Name and Secure Access PIN.');
+        _showToast('Please enter your Name and the Secure Access PIN (BIN).');
         return;
       }
 
