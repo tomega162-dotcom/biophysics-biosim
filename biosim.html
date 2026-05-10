@@ -5534,7 +5534,9 @@
         updateDock(-1);
       } catch (err) {
         _hideAuthOverlay();
-        _showToast(err.message === 'INVALID_PIN' ? 'Invalid PIN.' : 'Auth failed.');
+        console.error('Auth Debug:', err);
+        const errMsg = err.code || err.message || 'Unknown Error';
+        _showToast(errMsg === 'INVALID_PIN' ? 'Invalid PIN.' : `Auth Failed: ${errMsg}`);
       }
     }
 
