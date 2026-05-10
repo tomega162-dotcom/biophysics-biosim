@@ -2,8 +2,11 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BioSim v3 — Advanced Biophysics Platform</title>
   <link
@@ -251,8 +254,8 @@
       align-items: stretch;
     }
 
-    /* TOP BAR */
-    .topbar {
+    /* SIM ONLY HEADER */
+    .sim-only-header {
       display: flex;
       align-items: center;
       background: #fff;
@@ -265,7 +268,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
-    .topbar-brand {
+    .sim-header-brand {
       font-family: var(--font-head);
       font-size: 14px;
       color: var(--accent);
@@ -275,10 +278,11 @@
       font-weight: 700;
     }
 
-    .topbar-sep {
+    .sim-header-sep {
       width: 1px;
-      height: 32px;
+      height: 24px;
       background: var(--border);
+      flex-shrink: 0;
     }
 
     .status-indicators {
@@ -1924,7 +1928,7 @@
       }
     }
 
-    .topbar {
+    .sim-only-header {
       animation: borderPulse 4s infinite;
     }
 
@@ -2303,6 +2307,8 @@
 </head>
 
 <body>
+  <meta charset="UTF-8">
+  <title>BioSim v3.0 — Advanced Edition</title>
 
   <div id="instability-flash"></div>
 
@@ -2312,18 +2318,18 @@
 
       <!-- Logo Bar -->
       <div class="logo-bar">
-        <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital Financial Solutions" title="Bridge Capital Financial Solutions" style="height:96px;">
+        <img src="assets/bridge_capital_logo.png?v=3" alt="Bridge Capital Financial Solutions" title="Bridge Capital Financial Solutions" style="height:96px;">
         <div class="logo-divider"></div>
-        <img src="assets/university_logo.jpeg" alt="MSA University" title="MSA University">
+        <img src="assets/university_logo.jpeg?v=3" alt="MSA University" title="MSA University">
         <div class="logo-divider"></div>
-        <img src="assets/faculty_logo.jpeg" alt="Faculty of Biotechnology" title="Faculty of Biotechnology">
+        <img src="assets/faculty_logo.jpeg?v=3" alt="Faculty of Biotechnology" title="Faculty of Biotechnology">
         <div class="logo-divider"></div>
-        <img src="assets/lab_logo.jpeg" alt="Prototyping Lab" title="Prototyping Lab">
+        <img src="assets/lab_logo.jpeg?v=3" alt="Prototyping Lab" title="Prototyping Lab">
       </div>
 
       <!-- Hero Section -->
       <div class="entry-hero">
-        <div class="entry-hero-badge">⚛ BioSim v3.0 — Advanced Edition</div>
+        <div class="entry-hero-badge">BioSim v3.0 — Advanced Edition</div>
         <h1>Welcome to the <span>Biophysics Laboratory</span> Platform</h1>
         <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in real-time biophysical simulations.</p>
       </div>
@@ -2491,12 +2497,12 @@
 
   <!-- ===== MAIN SIM ===== -->
   <div id="screen-sim" class="screen">
-    <div class="topbar" id="topbar">
+    <div class="sim-only-header" id="topbar">
       <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
-      <div class="topbar-brand">BIOSIM</div>
-      <div class="topbar-sep"></div>
+      <div class="sim-header-brand">BIOSIM</div>
+      <div class="sim-header-sep"></div>
       <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
-      <div class="topbar-sep"></div>
+      <div class="sim-header-sep"></div>
       <div class="status-indicators">
         <div class="status-block">
           <div class="status-label" id="lbl-s1">Membrane</div>
