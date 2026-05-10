@@ -151,6 +151,12 @@
       .welcome-wrapper { padding:24px 16px 40px; }
     }
 
+    /* Auth Overlays */
+    #auth-overlay { position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; font-family:var(--font-head); }
+    .spinner { width:50px; height:50px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: helixSpin 1s linear infinite; }
+    .auth-toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#1a2332; color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; transition:transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index:11000; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+    .auth-toast.show { transform:translateX(-50%) translateY(0); }
+
     /* ===== PANEL SCREENS ===== */
     .panel-screen {
       background: #fff;
@@ -2282,44 +2288,6 @@
       border-color: var(--accent);
       box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
     }
-    /* Auth Loading Overlay */
-    #auth-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(10px);
-      z-index: 9999;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-family: 'Outfit', sans-serif;
-    }
-    .spinner {
-      width: 50px; height: 50px;
-      border: 4px solid rgba(255,255,255,0.1);
-      border-left-color: #38bdf8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .auth-toast {
-      position: fixed; bottom: 30px; right: 30px;
-      padding: 15px 25px;
-      border-radius: 12px;
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      z-index: 10000;
-      animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-      display: none;
-    }
-    @keyframes toastIn { from { transform: translateY(100px) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .auth-toast.error { background: #ef4444; }
-    .auth-toast.success { background: #10b981; }
-    .auth-toast.info { background: #3b82f6; }
   </style>
 </head>
 
@@ -2363,11 +2331,14 @@
             </div>
           </div>
 
-          <!-- Student ID (editable) -->
+          <!-- Secure Access PIN -->
           <div class="entry-info-item">
             <div class="field-group">
-              <div class="field-label">Student ID</div>
-              <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..." autocomplete="off">
+              <div class="field-label">Secure Access PIN</div>
+              <div class="bin-code-display">
+                <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15" autocomplete="off">
+                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
+              </div>
             </div>
           </div>
 
@@ -2411,13 +2382,13 @@
             </div>
           </div>
 
-          <!-- Secure Access PIN -->
+          <!-- BIN Code (non-functional / display only) -->
           <div class="entry-info-item">
             <div class="field-group">
-              <div class="field-label">Secure Access PIN</div>
+              <div class="field-label">BIN Code</div>
               <div class="bin-code-display">
-                <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15" autocomplete="off">
-                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
+                <input class="field-input" id="input-bin" type="text" placeholder="— — — —" disabled readonly>
+                <span class="bin-tag">Display Only</span>
               </div>
             </div>
           </div>
@@ -2428,11 +2399,6 @@
         <div style="text-align:center;">
           <button class="btn-primary" onclick="startEntry()"><span>Initialize Simulation →</span></button>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="entry-footer">
-        <p>Faculty of Biotechnology · Prototyping Lab · MSA University</p>
       </div>
 
     </div>
@@ -2502,21 +2468,6 @@
     </div>
   </div>
 
-  <!-- Trial Limit Exceeded Overlay -->
-  <div id="screen-lockout" class="screen">
-    <div class="panel-screen">
-      <div class="panel-tag" style="background:var(--danger)">Access Restricted</div>
-      <div class="panel-title">Maximum Simulation Attempts Reached</div>
-      <div class="panel-body" style="text-align:center;">
-        Your access PIN has reached the maximum allowed <strong>10 simulation attempts</strong>.<br><br>
-        <div style="background:rgba(239, 68, 68, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--danger);">
-          Please contact your <strong>instructor</strong> or <strong>laboratory supervisor</strong> for further access.
-        </div>
-      </div>
-      <button class="btn-primary" onclick="location.reload()"><span>Return to Entry →</span></button>
-    </div>
-  </div>
-
   <!-- ===== MAIN SIM ===== -->
   <div id="screen-sim" class="screen">
     <!-- Diagnosis Question Overlay -->
@@ -2583,11 +2534,6 @@
 
     <div class="topbar" id="topbar">
       <div class="topbar-brand">BIOSIM</div>
-      <div class="topbar-sep"></div>
-      <div style="display:flex; flex-direction:column; justify-content:center; padding: 0 15px;">
-        <div style="font-size:9px; color:var(--text-dim); letter-spacing:1px;">TRIALS REMAINING</div>
-        <div id="hud-trials-remaining" style="font-family:var(--font-sci); font-size:14px; font-weight:bold; color:var(--accent2);">10 / 10</div>
-      </div>
       <div class="topbar-sep"></div>
       <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
       <div class="topbar-sep"></div>
@@ -2954,20 +2900,19 @@
   </div>
 
   <!-- ===== CLINICAL TREATMENT PANEL ===== -->
-  <script>
-    // TEMPORARY ERROR REPORTER - REMOVE AFTER DEBUGGING
-    window.onerror = function (msg, src, line, col, err) {
-      document.title = 'JS_ERR:L' + line + ':' + msg;
-      const d = document.createElement('div');
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:99999;font-size:16px;font-family:monospace;white-space:pre-wrap';
-      d.textContent = 'ERROR at line ' + line + ': ' + msg;
-      document.body?.appendChild(d) || document.addEventListener('DOMContentLoaded', () => document.body.appendChild(d));
-      return false;
-    };
+  <script type="module">
+    import { validateStudentPin, logSimulationAttempt, syncStudentProgress, captureSessionContext } from './firebase_config.js';
     // =====================================================================
     // STATE
     // =====================================================================
-    let state = {
+    const state = {
+      userUid: null,
+      studentName: '',
+      currentSessionDocId: null,
+      sessionContext: {},
+      _diagnosisRT: 0,
+      _diagnosisStartTime: 0,
+      _sliderAdjustments: 0,
       running: false, stage: 0, recoveryMode: false, time: 60,
       membrane: 80, atp: 90, ion: 70, viability: 85,
       params: { perm: 50, na: 50, k: 50, ca: 30, ef: 0, pd: 0, temp: 37, ph: 7.4, tp: 60 },
@@ -5370,25 +5315,13 @@
     // =====================================================================
     // FREE CASE NAVIGATION
     // =====================================================================
-    async function selectCase(n) {
+    function selectCase(n) {
       // Stop current sim if running
       if (state.running) {
         state.running = false;
         clearInterval(state.simInterval); clearInterval(state.logInterval);
         setRecovery(false);
       }
-      
-      // Security Check: Trial Limits
-      try {
-        const { db } = await import('./firebase_config.js');
-        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        const stdSnap = await getDoc(doc(db, "students", state.userUid || 'dummy'));
-        if (stdSnap.exists() && stdSnap.data().trialsUsed >= 10) {
-          showScreen('lockout');
-          return;
-        }
-      } catch (e) { console.error("Limit check skipped:", e); }
-
       // sequential enforcement
       if (!state.caseUnlocked[n]) {
         addLog('MISSION DENIED: Case is currently locked. Complete the previous laboratory challenge first.', 'danger');
@@ -5492,84 +5425,14 @@
         }
       }
     }
-    async function startEntry() {
+    function startEntry() {
       const nm = document.getElementById('input-name').value.trim();
       const id = document.getElementById('input-id').value.trim();
-      const pin = document.getElementById('input-pin').value.trim();
-      
-      const uni = document.getElementById('input-university').value.trim();
-      const fac = document.getElementById('input-faculty').value.trim();
-      const dept = document.getElementById('input-department').value.trim();
-      const course = document.getElementById('input-course').value.trim();
-      const code = document.getElementById('input-course-code').value.trim();
-
-      if (!nm || !pin) {
-        showAuthToast("Please provide your name and secure PIN.", "error");
-        return;
-      }
-
-      const overlay = document.getElementById('auth-overlay');
-      const statusText = document.getElementById('auth-status-text');
-      overlay.style.display = 'flex';
-
-      try {
-        const { validateStudentPin, activateStudent, captureSessionContext } = await import('./firebase_config.js');
-        
-        statusText.textContent = "Capturing Laboratory Environment...";
-        const sessionContext = await captureSessionContext();
-        state.sessionContext = sessionContext;
-
-        statusText.textContent = "Authenticating PIN...";
-        const authResult = await validateStudentPin(pin);
-
-        if (authResult.status === "NEW") {
-          statusText.textContent = "Activating New Account...";
-          await activateStudent(pin, {
-            studentName: nm,
-            studentId: id,
-            university: uni,
-            faculty: fac,
-            department: dept,
-            course: course,
-            courseCode: code,
-            ...sessionContext
-          });
-          showAuthToast("Welcome to BioSim! Account activated.", "success");
-        } else {
-          showAuthToast("Welcome back, Researcher.", "success");
-        }
-
-        // Successfully authenticated
-        state.userName = nm || 'Researcher';
-        state.userId = id || 'LAB-001';
-        state.userPin = pin;
-        state.userUid = authResult.studentId || authResult.uid;
-        state.trialsUsed = authResult.trialsUsed || 0;
-        
-        document.getElementById('hud-trials-remaining').textContent = `${10 - state.trialsUsed} / 10`;
-        
-        setTimeout(() => {
-          overlay.style.display = 'none';
-          showScreen('intro');
-          document.getElementById('case-dock').style.display = 'flex';
-          updateDock(-1);
-        }, 800);
-
-      } catch (err) {
-        overlay.style.display = 'none';
-        let msg = "Authentication failed. Please check your connection.";
-        if (err.message === "INVALID_PIN") msg = "Invalid Access PIN. Please try again.";
-        if (err.message === "LIMIT_EXCEEDED") msg = "Maximum trial limit reached for this PIN.";
-        showAuthToast(msg, "error");
-      }
-    }
-
-    function showAuthToast(msg, type) {
-      const t = document.getElementById('auth-toast');
-      t.textContent = msg;
-      t.className = `auth-toast ${type}`;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 4000);
+      state.userName = nm || 'Researcher';
+      state.userId = id || 'LAB-001';
+      showScreen('intro');
+      document.getElementById('case-dock').style.display = 'flex';
+      updateDock(-1); // Initialize dock with lock states, no active case yet
     }
 
     function showCaseIntro() { selectCase(0); }
@@ -5682,35 +5545,24 @@
 
     async function beginSimulation() {
       if (state.running) return;
+      
+      // Reset Clinical Metrics
+      state._sliderAdjustments = 0;
+      state._diagnosisRT = 0;
 
       // Log Attempt to Firebase
       try {
-        const { logSimulationAttempt } = await import('./firebase_config.js');
         const sessionDocId = await logSimulationAttempt(state.userUid, {
           caseIndex: state.stage,
           caseTitle: STAGES[state.stage].title,
           startTime: new Date().toISOString(),
           ...state.sessionContext
         });
-        state.currentSessionDocId = sessionDocId; // Store for final sync
+        state.currentSessionDocId = sessionDocId;
         
-        // Update local trial count
-        state.trialsUsed = (state.trialsUsed || 0) + 1;
-        const trialsRemaining = 10 - state.trialsUsed;
-        document.getElementById('hud-trials-remaining').textContent = `${trialsRemaining} / 10`;
-        if (trialsRemaining < 0) { showScreen('lockout'); return; }
-        
-      } catch (err) {
-        if (err.message === "LIMIT_EXCEEDED") {
-          showScreen('lockout');
-          return;
-        }
-        console.error("Trial logging failed:", err);
-      }
-
-      state.running = true;
-      state.time = STAGES[state.stage]?.duration || 60;
-      state._startTime = Date.now();
+        state.running = true;
+        state.time = STAGES[state.stage]?.duration || 60;
+        state._startTime = Date.now();
       // Case 00 Normal phase (stage 0, phase 1) should be UNLOCKED (phase 3). 
       // All other clinical cases start in Observation (phase 1).
       state._clinicalPhase = 1; 
@@ -5719,12 +5571,6 @@
       state._refractoryLock = false;
       state._floorRampdown = false;
       state._floorRampTimer = 0;
-      
-      // Reset Clinical Metrics
-      state.sliderAdjustments = 0;
-      state.diagnosisRT = 0;
-      state._diagnosisCorrect = false;
-      
       updateDock(state.stage);
       document.getElementById('btn-begin').style.display = 'none';
 
@@ -5895,11 +5741,6 @@
     // CONTROLS
     // =====================================================================
     function updateCtrl(key, val) {
-      if (!state.running) return;
-
-      // Increment adjustment counter for clinical audit
-      state.sliderAdjustments = (state.sliderAdjustments || 0) + 1;
-
       const inputs = document.querySelectorAll('input[type=range]');
       const now = Date.now();
       const obsWindow = 5000; // 5-second observation phase
@@ -6125,6 +5966,7 @@
       state.simInterval = setInterval(gameTick, 1000);
       if (state.logInterval) clearInterval(state.logInterval);
       state.logInterval = setInterval(periodicLog, 7000);
+      logTelemetry('session_start', { sessionId: state.sessionId, stage: state.stage });
     }
 
     function gameTick() {
@@ -6230,7 +6072,7 @@
           stabMult = 0.15 + 0.85 * (timeSinceSlider / STABILIZE_MS); // 15% → 100% over 3s
         }
 
-        // ── Gradual Ramp-Up: drift starts weak after alert, builds over 5s ──
+        // ── Gradual Ramp-Up: drift starts weak after alert, builds over 5s ══
         const timeSinceAlert = Date.now() - (state._alertFiredTime || 0);
         const RAMP_MS = 5000;
         const rampMult = Math.min(1.0, timeSinceAlert / RAMP_MS);
@@ -6437,6 +6279,7 @@
       clearInterval(state.simInterval);
       clearInterval(state.logInterval);
       setRecovery(false);
+      logTelemetry('simulation_end', { sessionId: state.sessionId, stage: state.stage, score: state.continuousScore });
       addLog('⏱ TIME EXPIRED — Simulation frozen. Calculating results...', 'warn');
       setTimeout(() => showScoreScreen(), 800);
     }
@@ -6723,8 +6566,6 @@
     function showDiagnosisQuestion(qIdx = -1) {
       const variant = state._activeVariant;
       if (!variant) return;
-      
-      state._diagnosisStartTime = Date.now(); // Record RT start
 
       const overlay = document.getElementById('diagnosis-overlay');
       const optionsBox = document.getElementById('diagnosis-options');
@@ -6776,11 +6617,6 @@
         btn.textContent = optLabel;
         btn.onclick = () => {
           overlay.style.display = 'none';
-          
-          // Record Response Time
-          if (state._diagnosisStartTime) {
-            state.diagnosisRT = (Date.now() - state._diagnosisStartTime) / 1000;
-          }
           
           if (state.stage === 6) {
             if (qIdx >= 0) {
@@ -6978,6 +6814,24 @@
       state.running = false;
       clearInterval(state.simInterval); clearInterval(state.logInterval);
       state.stagesCompleted = state.stage + 1;
+      
+      // Sync full clinical results to session
+      const snapshot = calculateFinalScore();
+      syncStudentProgress(state.userUid, state.currentSessionDocId, {
+        caseIndex: state.stage,
+        score: snapshot.total,
+        details: {
+          ...snapshot,
+          sliderAdjustments: state._sliderAdjustments,
+          diagnosisRT: state._diagnosisRT,
+          finalATP: state.atp,
+          finalViability: state.viability,
+          finalMembrane: state.membrane,
+          finalIon: state.ion,
+          variant: state._activeVariant?.id || 'standard'
+        }
+      });
+
       const s = STAGES[state.stage];
       document.getElementById('trans-tag').textContent = `Stage ${state.stage + 1} / ${STAGES.length} — Complete`;
       document.getElementById('trans-title').textContent = s.transTitle;
@@ -6989,52 +6843,6 @@
       if (state.stage + 1 < STAGES.length) {
         state.caseUnlocked[state.stage + 1] = true;
       }
-      
-      // Sync Progress to Firebase
-      try {
-        const details = calculateFinalScore(true);
-        const grade = details.total > 150 ? 'S' : (details.total > 120 ? 'A' : 'B');
-        state.caseScores[state.stage] = { score: details.total, grade: grade };
-        updateDock(state.stage);
-
-        const snapshot = {
-          score: details.total,
-          grade: grade,
-          isComplete: true,
-          endTime: new Date().toISOString(),
-          ...state.sessionContext,
-          details: {
-            ...details,
-            finalBioState: {
-              viability: state.viability,
-              atp: state.atp,
-              ionBalance: state.ion,
-              membrane: state.membrane
-            },
-            finalSliders: { ...state.params },
-            briefing: {
-              condition: STAGES[state.stage].title,
-              variant: state.variantPoolIndex || 0,
-              difficulty: STAGES[state.stage].stressor
-            },
-            performance: {
-              actions: state.score.actions,
-              sliderAdjustments: state.sliderAdjustments || 0,
-              diagnosisRT: state.diagnosisRT || 0,
-              isCorrect: state._diagnosisCorrect || false
-            }
-          }
-        };
-
-        import('./firebase_config.js').then(m => {
-          m.syncStudentProgress(state.userUid, state.currentSessionDocId, {
-            caseIndex: state.stage,
-            score: details.total,
-            details: snapshot
-          });
-        });
-      } catch (e) { console.error("Firebase sync failed:", e); }
-
       setRecovery(false);
     }
 
@@ -7161,7 +6969,7 @@
       return Math.max(0, Math.min(100, 60 + viabBonus - actionPenalty));
     }
 
-    function calculateFinalScore(getDetails = false) {
+    function calculateFinalScore() {
       const stabScore = Math.round(state.viability * 2);
       const atpScore = Math.round(state.atp);
       const stageScore = state.stagesCompleted * 100;
@@ -7169,11 +6977,10 @@
       const timeBonus = Math.round(state.time * 0.5);
 
       if (state.stage === 0) {
+        // Case 00 specialized total (Ph1 + Ph2)
         const ph1 = (state._ph1Finals?.diagnosis || 0) + (state._ph1Finals?.direction || 0) + (state._ph1Finals?.precision || 0);
         const ph2 = (state._ph2Score.direction || 0) + (state._ph2Score.precision || 0) + Math.max(0, 10 - (state._phase2ResponseTime || 0));
-        const total = Math.max(0, Math.round(ph1 + ph2 + (state.viability * 2)));
-        if (getDetails) return { total, ph1, ph2, viability: state.viability };
-        return total;
+        return Math.max(0, Math.round(ph1 + ph2 + (state.viability * 2)));
       }
 
       const precisionScore = calculatePrecisionScore();
@@ -7181,13 +6988,7 @@
       const oscillationPenalty = state._oscillationPenalty || 0;
       const earlyActionPenalty = state._earlyActionPenalty || 0;
       const raw = stabScore + atpScore + stageScore - actionPenalty + timeBonus + (precisionScore * 0.5) + (decisionQuality * 0.5) - oscillationPenalty - earlyActionPenalty;
-      const total = Math.max(0, Math.round(raw));
-      
-      if (getDetails) return {
-        total, stabScore, atpScore, actionPenalty, timeBonus, 
-        precisionScore, decisionQuality, oscillationPenalty, earlyActionPenalty
-      };
-      return total;
+      return Math.max(0, Math.round(raw));
     }
 
     function updateScore() {
@@ -11351,6 +11152,52 @@
       selectCase(0);
       showScreen('entry'); // Ensure we start at entry
     });
+    // ── Global Handlers for Auth ──
+    window.startEntry = startEntry;
+
+    async function startEntry() {
+      const name = document.getElementById('input-name').value.trim();
+      const pin = document.getElementById('input-pin').value.trim();
+
+      if (!name || !pin) {
+        showToast('Please enter both your Full Name and Secure Access PIN.');
+        return;
+      }
+
+      showAuthOverlay('Verifying Laboratory Credentials...');
+
+      try {
+        const { validateStudentPin, captureSessionContext } = await import('./firebase_config.js');
+        const studentData = await validateStudentPin(pin, name);
+        state.userUid = studentData.uid;
+        state.studentName = name;
+        
+        state.sessionContext = await captureSessionContext();
+        
+        hideAuthOverlay();
+        document.getElementById('screen-entry').classList.remove('active');
+        document.getElementById('screen-intro').classList.add('active');
+      } catch (err) {
+        hideAuthOverlay();
+        showToast(err.message || 'Authentication Failed.');
+      }
+    }
+
+    function showAuthOverlay(text) {
+      document.getElementById('auth-overlay').style.display = 'flex';
+      document.getElementById('auth-status-text').textContent = text;
+    }
+
+    function hideAuthOverlay() {
+      document.getElementById('auth-overlay').style.display = 'none';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('auth-toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
   </script>
 </body>
 
