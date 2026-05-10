@@ -66,7 +66,7 @@
       align-items: center;
       justify-content: center;
     }
-    #screen-entry { top: 0 !important; } /* Entry screen still full screen */
+    #screen-entry { top: 64px; } /* Apply offset to entry screen too */
 
     .screen.active {
       display: flex;
@@ -2476,7 +2476,7 @@
     </div>
   </div>
 
-  <div class="topbar" id="topbar" style="display:none; position:fixed; top:0; left:0; right:0; z-index:1000;">
+  <div class="topbar" id="topbar" style="display:flex; position:fixed; top:0; left:0; right:0; z-index:1000;">
     <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
     <div class="topbar-brand">BIOSIM</div>
     <div class="topbar-sep"></div>
@@ -5499,13 +5499,14 @@
       }
     }
 
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById('screen-' + id).classList.add('active');
       // Show dock on all screens except entry
       document.getElementById('case-dock').style.display = id === 'entry' ? 'none' : 'flex';
-      // Show topbar on all screens except entry
-      document.getElementById('topbar').style.display = id === 'entry' ? 'none' : 'flex';
+      // Global header branding is always visible; hide sim-specific data when not in sim
+      const isSim = (id === 'sim');
+      document.getElementById('stage-display').style.visibility = isSim ? 'visible' : 'hidden';
+      document.querySelector('.status-indicators').style.visibility = isSim ? 'visible' : 'hidden';
+      document.querySelector('.timer-block').style.visibility = isSim ? 'visible' : 'hidden';
+      document.querySelectorAll('.topbar-sep').forEach(s => s.style.visibility = isSim ? 'visible' : 'hidden');
     }
 
     // =====================================================================
