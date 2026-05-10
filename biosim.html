@@ -2895,6 +2895,59 @@
     </div>
   </div>
 
+  <!-- Firebase Universal Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyACpdrPCel5qc1wTECoMp8GKQaHYjwb-M4",
+      authDomain: "biosim-laboratory.firebaseapp.com",
+      projectId: "biosim-laboratory",
+      storageBucket: "biosim-laboratory.firebasestorage.app",
+      messagingSenderId: "572026392525",
+      appId: "1:572026392525:web:eddbca8b3759e8c739be84"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    window.BioSimAuth = {
+      validatePin: async (pin) => {
+        if (!auth.currentUser) await signInAnonymously(auth);
+        const snap = await getDoc(doc(db, "accessPins", pin));
+        if (!snap.exists()) throw new Error("INVALID_PIN");
+        const data = snap.data();
+        if (data.used && data.assignedTo) {
+          const uSnap = await getDoc(doc(db, "users", data.assignedTo));
+          if (!uSnap.exists()) return { status: "NEW", data };
+          return { status: "RETURNING", studentId: data.assignedTo, trialsUsed: uSnap.data().trialsUsed || 0, studentData: uSnap.data() };
+        }
+        return { status: "NEW", data };
+      },
+      activateUser: async (pin, studentData) => {
+        const uid = auth.currentUser ? auth.currentUser.uid : `std_${Date.now()}`;
+        await runTransaction(db, async (t) => {
+          t.update(doc(db, "accessPins", pin), { used: true, assignedTo: uid, activatedAt: serverTimestamp() });
+          t.set(doc(db, "users", uid), { ...studentData, pinCode: pin, activatedAt: serverTimestamp(), trialsUsed: 0, trialLimit: 100 });
+        });
+        return { uid };
+      },
+      logSession: async (uid, data) => {
+        const sid = `sess_${Date.now()}`;
+        await updateDoc(doc(db, "users", uid), { trialsUsed: increment(1), lastLogin: serverTimestamp(), lastSessionId: sid });
+        await setDoc(doc(db, "users", uid, "sessions", sid), { ...data, sessionId: sid, timestamp: serverTimestamp() });
+        return sid;
+      },
+      syncProgress: async (uid, sid, data) => {
+        await updateDoc(doc(db, "users", uid, "sessions", sid), { ...data, completedAt: serverTimestamp() });
+        await updateDoc(doc(db, "users", uid), { totalScore: increment(data.score || 0), lastLogin: serverTimestamp() });
+      }
+    };
+  </script>
+
   <!-- ===== CLINICAL TREATMENT PANEL ===== -->
   <script>
     // TEMPORARY ERROR REPORTER - REMOVE AFTER DEBUGGING
@@ -5452,11 +5505,10 @@
           };
         } catch (e) { console.warn('Location telemetry restricted.'); }
 
-        const { validateStudentPin, activateStudent } = await import('./firebase_config.js');
-        const result = await validateStudentPin(pin);
+        const result = await window.BioSimAuth.validatePin(pin);
 
         if (result.status === 'NEW') {
-          const activated = await activateStudent(pin, {
+          const activated = await window.BioSimAuth.activateUser(pin, {
             studentName: nm,
             studentId: id,
             university: document.getElementById('input-university')?.value.trim() || '',
@@ -5482,7 +5534,7 @@
         updateDock(-1);
       } catch (err) {
         _hideAuthOverlay();
-        _showToast(err.message === 'INVALID_PIN' ? 'Invalid PIN.' : (err.message === 'LIMIT_EXCEEDED' ? 'Trial limit reached.' : 'Auth failed.'));
+        _showToast(err.message === 'INVALID_PIN' ? 'Invalid PIN.' : 'Auth failed.');
       }
     }
 
@@ -5605,8 +5657,7 @@
       // Log attempt to Firebase
       if (state.userUid) {
         try {
-          const { logSimulationAttempt } = await import('./firebase_config.js');
-          state.currentSessionId = await logSimulationAttempt(state.userUid, {
+          state.currentSessionId = await window.BioSimAuth.logSession(state.userUid, {
             caseIndex: state.stage,
             caseTitle: STAGES[state.stage]?.title || '',
             startTime: new Date().toISOString(),
@@ -6874,9 +6925,7 @@
 
       // Sync progress to Firebase
       if (state.userUid && state.currentSessionId) {
-        import('./firebase_config.js').then(({ syncStudentProgress }) => {
-          syncStudentProgress(state.userUid, {
-            sessionId: state.currentSessionId,
+        window.BioSimAuth.syncProgress(state.userUid, state.currentSessionId, {
             caseIndex: state.stage,
             score: state.score.total || state.continuousScore || 0,
             isComplete: true,
@@ -6886,7 +6935,6 @@
             finalViability: Math.round(state.viability),
             finalMembrane: Math.round(state.membrane),
             variant: state._activeVariant?.id || 'standard'
-          });
         }).catch(e => console.warn('Firebase sync failed:', e));
       }
 
