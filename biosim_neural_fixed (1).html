@@ -11786,8 +11786,7 @@
     // Final initialization
     window.addEventListener('load', () => {
       resizeCanvas();
-      selectCase(0);
-      showScreen('entry'); // Ensure we start at entry
+      showScreen('entry'); // Ensure we start at entry — selectCase only runs after PIN auth
     });
   </script>
 </body>
