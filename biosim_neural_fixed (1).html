@@ -5827,8 +5827,8 @@
       try {
         const { db } = await import('./firebase_config.js');
         const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        const stdSnap = await getDoc(doc(db, "students", state.userUid || 'dummy'));
-        if (stdSnap.exists() && stdSnap.data().trialsUsed >= 10) {
+        const stdSnap = await getDoc(doc(db, "users", state.userUid || 'dummy'));
+        if (stdSnap.exists() && (stdSnap.data().totalTrials || 0) >= 10) {
           showScreen('lockout');
           return;
         }
@@ -5958,35 +5958,42 @@
       overlay.style.display = 'flex';
 
       try {
-        const { validateStudentPin, activateStudent } = await import('./firebase_config.js');
+        const { validateStudentPin, activateStudent, startNewSession } = await import('./firebase_config.js');
 
         statusText.textContent = "Authenticating PIN...";
         const authResult = await validateStudentPin(pin);
 
         if (authResult.status === "NEW") {
           statusText.textContent = "Activating New Account...";
-          await activateStudent(pin, {
-            studentName: nm,
+          const result = await activateStudent(pin, {
+            fullName: nm,
             studentId: id,
             university: uni,
             faculty: fac,
             department: dept,
-            course: course,
+            courseName: course,
             courseCode: code
           });
           showAuthToast("Welcome to BioSim! Account activated.", "success");
+          state.userUid = result.uid;
+          state.currentTrialId = result.trialId;
+          state.totalTrials = 1;
         } else {
-          showAuthToast("Welcome back, Researcher.", "success");
+          // Returning student — start a new session/trial on every login
+          statusText.textContent = "Starting New Session...";
+          state.userUid = authResult.studentId;
+          state.totalTrials = (authResult.totalTrials || 0) + 1;
+          const trialId = await startNewSession(authResult.studentId);
+          state.currentTrialId = trialId;
+          showAuthToast("Welcome back, Researcher. New session started.", "success");
         }
 
         // Successfully authenticated
         state.userName = nm || 'Researcher';
         state.userId = id || 'LAB-001';
         state.userPin = pin;
-        state.userUid = authResult.studentId || authResult.uid;
-        state.trialsUsed = authResult.trialsUsed || 0;
 
-        document.getElementById('hud-trials-remaining').textContent = `${10 - state.trialsUsed} / 10`;
+        document.getElementById('hud-trials-remaining').textContent = `Session ${state.totalTrials}`;
 
         setTimeout(() => {
           overlay.style.display = 'none';
@@ -6123,27 +6130,15 @@
     async function beginSimulation() {
       if (state.running) return;
 
-      // Log Attempt to Firebase
+      // Log Case Start to Firebase (case entry within current session)
       try {
-        const { logSimulationAttempt } = await import('./firebase_config.js');
-        await logSimulationAttempt(state.userUid, {
-          caseIndex: state.stage,
-          caseTitle: STAGES[state.stage].title,
-          startTime: new Date().toISOString()
+        const { logCaseStart } = await import('./firebase_config.js');
+        await logCaseStart(state.userUid, state.currentTrialId, {
+          caseId: state.stage,
+          caseName: STAGES[state.stage].title
         });
-
-        // Update local trial count
-        state.trialsUsed = (state.trialsUsed || 0) + 1;
-        const trialsRemaining = 10 - state.trialsUsed;
-        document.getElementById('hud-trials-remaining').textContent = `${trialsRemaining} / 10`;
-        if (trialsRemaining < 0) { showScreen('lockout'); return; }
-
       } catch (err) {
-        if (err.message === "LIMIT_EXCEEDED") {
-          showScreen('lockout');
-          return;
-        }
-        console.error("Trial logging failed:", err);
+        console.error("Case start logging failed:", err);
       }
 
       state.running = true;
@@ -6934,6 +6929,27 @@
         components: { diagScore, stabScore, effScore, precScore, alertScore, bioScore, overPenalty, timeBonus }
       };
 
+      // Sync case score + grade to Firebase
+      try {
+        const caseDuration = treatmentDuration - (state.time || 0);
+        import('./firebase_config.js').then(m => {
+          m.syncStudentProgress(state.userUid, {
+            trialId: state.currentTrialId,
+            caseIndex: state.stage,
+            caseName: s.name || s.title,
+            duration: caseDuration,
+            optimalTime: treatmentDuration,
+            stabilityScore: stabScore,
+            actionsTaken: actCount,
+            efficiencyPenalty: overPenalty,
+            totalScore: finalScore,
+            grade: gradeClass,
+            gradeLabel: grade,
+            isComplete: true
+          });
+        });
+      } catch (e) { console.error('Firebase case score sync failed:', e); }
+
       // Unlock next case
       if (state.stage < STAGES.length - 1) {
         state.caseUnlocked[state.stage + 1] = true;
@@ -7035,6 +7051,30 @@
       document.getElementById('summary-grade').style.color = gradeColor;
       document.getElementById('summary-completed').textContent = `${completed} / ${STAGES.length}`;
       document.getElementById('summary-verdict').textContent = verdict;
+
+      // Sync final overall score + grade to Firebase (session-level summary)
+      try {
+        import('./firebase_config.js').then(m => {
+          // Sync a special "final summary" entry that updates the session's overall outcome
+          const studentRef = m.db ? m.doc(m.db, 'users', state.userUid) : null;
+          // Use syncStudentProgress with a meta-update: sync the last case again
+          // to trigger the session-level aggregate recalc, then update the trial's finalOutcome
+          m.syncStudentProgress(state.userUid, {
+            trialId: state.currentTrialId,
+            caseIndex: STAGES.length - 1,
+            caseName: STAGES[STAGES.length - 1]?.name || 'Final',
+            duration: 0,
+            optimalTime: 0,
+            stabilityScore: 0,
+            actionsTaken: 0,
+            efficiencyPenalty: 0,
+            totalScore: state.caseScores[STAGES.length - 1]?.score || 0,
+            grade: state.caseScores[STAGES.length - 1]?.grade || '',
+            gradeLabel: overallGrade,
+            isComplete: true
+          });
+        });
+      } catch (e) { console.error('Firebase final summary sync failed:', e); }
 
       showScreen('summary');
     }
@@ -7410,20 +7450,11 @@
         state.caseUnlocked[state.stage + 1] = true;
       }
 
-      // Sync Progress to Firebase
-      try {
-        const score = calculateFinalScore();
-        state.caseScores[state.stage] = { score: score, grade: 'S' };
-        updateDock(state.stage);
-
-        import('./firebase_config.js').then(m => {
-          m.syncStudentProgress(state.userUid, {
-            caseIndex: state.stage,
-            score: score,
-            isComplete: true
-          });
-        });
-      } catch (e) { console.error("Firebase sync failed:", e); }
+      // Score already synced via showScoreScreen — just update dock
+      if (!state.caseScores[state.stage]) {
+        state.caseScores[state.stage] = { score: calculateFinalScore(), grade: 'completed' };
+      }
+      updateDock(state.stage);
 
       setRecovery(false);
     }
@@ -7508,6 +7539,29 @@
 
       // Final Score Update (Last Step)
       document.getElementById('r-total').textContent = finalScore;
+
+      // Sync death/success score to Firebase
+      try {
+        const gradeLabel = success ? 'CELL SURVIVED' : 'CELL DECEASED';
+        const gradeClass = success ? 'success' : 'critical';
+        import('./firebase_config.js').then(m => {
+          m.syncStudentProgress(state.userUid, {
+            trialId: state.currentTrialId,
+            caseIndex: state.stage,
+            caseName: STAGES[state.stage]?.title || STAGES[state.stage]?.name,
+            duration: elapsed,
+            optimalTime: caseDuration,
+            stabilityScore: Math.round(state.viability * 2),
+            actionsTaken: state.score.actions || state.sliderActionCount || 0,
+            efficiencyPenalty: 0,
+            totalScore: finalScore,
+            grade: gradeClass,
+            gradeLabel: gradeLabel,
+            isComplete: true
+          });
+        });
+      } catch (e) { console.error('Firebase end-sim sync failed:', e); }
+
       showScreen('end');
     }
 
@@ -7684,6 +7738,7 @@
         params: { perm: 50, na: 50, k: 50, ca: 30, ef: 0, pd: 0, temp: 37, ph: 7.4, tp: 60 },
         shield: false, score: { stability: 0, efficiency: 100, actions: 0, total: 0 },
         stagesCompleted: 0, peakViability: 85, userName: state.userName, userId: state.userId,
+        userUid: state.userUid, currentTrialId: state.currentTrialId, totalTrials: state.totalTrials, userPin: state.userPin,
         simInterval: null, logInterval: null, stageTimer: 0,
         overControlCount: 0, recentActions: [], falseStabilityTimer: 0,
         hiddenDamage: 0, lastParamSnapshot: null, oscillationCount: 0, consecutiveInjects: 0,
