@@ -5958,6 +5958,25 @@
       overlay.style.display = 'flex';
 
       try {
+        // Developer bypass PIN — full access, no Firebase, no trial limits
+        if (pin === 'BIOSIM123') {
+          state.userUid = 'dev_admin';
+          state.currentTrialId = `dev_trial_${Date.now()}`;
+          state.totalTrials = 1;
+          state.userName = nm || 'Developer';
+          state.userId = id || 'DEV-001';
+          state.userPin = pin;
+          document.getElementById('hud-trials-remaining').textContent = 'DEV MODE';
+          showAuthToast("Developer access granted. Full access enabled.", "success");
+          setTimeout(() => {
+            overlay.style.display = 'none';
+            showScreen('intro');
+            document.getElementById('case-dock').style.display = 'flex';
+            updateDock(-1);
+          }, 500);
+          return;
+        }
+
         const { validateStudentPin, activateStudent, startNewSession } = await import('./firebase_config.js');
 
         statusText.textContent = "Authenticating PIN...";
