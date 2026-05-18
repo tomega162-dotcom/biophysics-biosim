@@ -110,6 +110,12 @@ export async function validateStudentPin(pin) {
             }
 
             const studentData = studentSnap.data();
+
+            // Enforce trial limit: max 10 PIN entries
+            if ((studentData.totalTrials || 0) >= 10) {
+                throw new Error("LIMIT_EXCEEDED");
+            }
+
             return {
                 status: "RETURNING",
                 studentId: pinData.assignedTo,
@@ -352,9 +358,13 @@ export async function syncStudentProgress(studentUid, progressData) {
 
             // Update the specific case
             const caseIdx = trial.casesScores.findIndex(c => c.caseId === progressData.caseIndex);
+            // Preserve startedAt from the original logCaseStart entry
+            const existingCase = caseIdx !== -1 ? trial.casesScores[caseIdx] : null;
             const caseScore = {
                 caseId: progressData.caseIndex,
                 caseName: progressData.caseName || `Case ${progressData.caseIndex}`,
+                startedAt: existingCase?.startedAt || now,
+                exitTime: progressData.isComplete ? now : null,
                 duration: progressData.duration || 0,
                 optimalTime: progressData.optimalTime || 0,
                 stabilityScore: progressData.stabilityScore || 0,

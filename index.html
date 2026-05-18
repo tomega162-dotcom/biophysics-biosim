@@ -2316,13 +2316,20 @@
   <div id="screen-entry" class="screen active">
     <div class="welcome-wrapper">
 
-      <!-- Logo Section -->
-      <div style="text-align:center; margin-bottom: 40px;">
-        <img src="assets/bridge_capital_logo.png?v=5" alt="Bridge Capital Financial Solutions" style="height:160px; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.15);">
+      <!-- Logo Bar -->
+      <div class="logo-bar">
+        <img src="assets/bridge_capital_logo.png?v=3" alt="Bridge Capital Financial Solutions" title="Bridge Capital Financial Solutions" style="height:96px;">
+        <div class="logo-divider"></div>
+        <img src="assets/university_logo.jpeg?v=3" alt="MSA University" title="MSA University">
+        <div class="logo-divider"></div>
+        <img src="assets/faculty_logo.jpeg?v=3" alt="Faculty of Biotechnology" title="Faculty of Biotechnology">
+        <div class="logo-divider"></div>
+        <img src="assets/lab_logo.jpeg?v=3" alt="Prototyping Lab" title="Prototyping Lab">
       </div>
 
       <!-- Hero Section -->
       <div class="entry-hero">
+        <div style="background:#ff4757; color:#fff; padding:4px 12px; border-radius:4px; font-weight:bold; margin-bottom:10px; display:inline-block;">DEBUG VERSION: LATEST LOGO FIX (v5)</div>
         <div class="entry-hero-badge">BioSim v3.0 — Advanced Edition</div>
         <h1>Welcome to the <span>Biophysics Laboratory</span> Platform</h1>
         <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in real-time biophysical simulations.</p>
@@ -2430,7 +2437,7 @@
   <div id="screen-intro" class="screen">
     <div class="panel-screen">
       <div style="text-align:center; margin-bottom: 30px;">
-        <img src="assets/bridge_capital_logo.png?v=5" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+        <img src="assets/bridge_capital_logo.png?v=2" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
       </div>
       <div class="panel-tag">Mission Briefing</div>
       <div class="panel-title">You are a biotechnologist<br>operating in a live laboratory.</div>
@@ -2470,7 +2477,7 @@
   <div id="screen-case" class="screen">
     <div class="panel-screen" id="case-panel-screen">
       <div style="text-align:center; margin-bottom: 30px;">
-        <img src="assets/bridge_capital_logo.png?v=5" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+        <img src="assets/bridge_capital_logo.png?v=2" style="height:96px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
       </div>
       <div class="panel-tag" id="case-tag">Stage 1 / 7</div>
       <div class="panel-title" id="case-title">OSMOTIC STRESS</div>
@@ -2491,8 +2498,8 @@
 
   <!-- ===== MAIN SIM ===== -->
   <div id="screen-sim" class="screen">
-    <div class="sim-only-header" id="game-topbar">
-      <img src="assets/bridge_capital_logo.png?v=5" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
+    <div class="sim-only-header" id="game-topbar" style="display:none">
+      <img src="assets/bridge_capital_logo.png?v=2" alt="Bridge Capital" style="height:36px;border-radius:6px;margin-right:8px;">
       <div class="sim-header-brand">BIOSIM</div>
       <div class="sim-header-sep"></div>
       <div class="stage-label" id="stage-display">STAGE 1 — MEMBRANE TRANSPORT</div>
@@ -2889,7 +2896,7 @@
   <!-- ===== CASE SELECTOR DOCK ===== -->
   <div class="case-dock" id="case-dock" style="display:none">
     <div class="case-dock-branding">
-      <img src="assets/bridge_capital_logo.png?v=5" style="height:36px; border-radius:4px;">
+      <img src="assets/bridge_capital_logo.png?v=2" style="height:36px; border-radius:4px;">
     </div>
     <div class="case-dock-tab" id="dock-0" style="--tab-color:#007a55" onclick="selectCase(0)">
       <div class="case-dock-num">01</div>
@@ -5517,9 +5524,8 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-' + id).classList.add('active');
-      // Show dock only on case selection and simulation
-      const showDock = (id === 'case' || id === 'sim');
-      document.getElementById('case-dock').style.display = showDock ? 'flex' : 'none';
+      // Show dock on all screens except entry
+      document.getElementById('case-dock').style.display = id === 'entry' ? 'none' : 'flex';
     }
 
     // =====================================================================
@@ -5838,6 +5844,7 @@
         state.userId = pin;
         _hideAuthOverlay();
         showScreen('intro');
+        document.getElementById('case-dock').style.display = 'flex';
         updateDock(-1);
       } catch (err) {
         _hideAuthOverlay();

@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyACpdrPCel5qc1wTECoMp8GKQaHYjwb-M4",
@@ -17,21 +17,21 @@ const db = getFirestore(app);
 async function activatePins() {
     console.log("Starting PIN Activation...");
     const masterPin = "B#8&zP9!kL2$";
-    const studentPins = ["P9pv&SvfBe29"]; // User provided PIN
+    const studentPins = ["P9pv&SvfBe29"];
     
-    // Generate some more sample PINs to fill the pool if needed
     for(let i=0; i<10; i++) studentPins.push("TEST-" + Math.random().toString(36).substring(7).toUpperCase());
 
     const batch = writeBatch(db);
+    const now = new Date().toISOString();
     
     // 1. Add Master PIN
     const masterRef = doc(db, "accessPins", masterPin);
     batch.set(masterRef, {
         pinCode: masterPin,
         used: false,
+        assignedTo: null,
         role: "admin",
-        trialLimit: 100,
-        createdAt: serverTimestamp()
+        createdAt: now
     });
 
     // 2. Add Student PINs
@@ -40,9 +40,9 @@ async function activatePins() {
         batch.set(pinRef, {
             pinCode: pin,
             used: false,
+            assignedTo: null,
             role: "student",
-            trialLimit: 10,
-            createdAt: serverTimestamp()
+            createdAt: now
         });
     });
 

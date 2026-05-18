@@ -375,7 +375,7 @@
 
     <script type="module">
         import { db, auth } from './firebase_config.js';
-        import { doc, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let currentTab = 'dashboard';
         let generatedPins = [];
@@ -468,9 +468,7 @@
                         used: false,
                         assignedTo: null,
                         role: index === 0 ? "admin" : "student",
-                        trialLimit: 10,
-                        trialsUsed: 0,
-                        createdAt: serverTimestamp()
+                        createdAt: new Date().toISOString()
                     });
                 });
 
