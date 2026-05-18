@@ -18,7 +18,7 @@ let db, auth;
 
 // Firebase Project Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyACpdrPCel5qc1wTECoMp8GKQaHYjwb-M4",
+    apiKey: "AIzaSyACpdrPCeL5qC1wTEcoMp8GKQaHYjwb-M4",
     authDomain: "biosim-laboratory.firebaseapp.com",
     projectId: "biosim-laboratory",
     storageBucket: "biosim-laboratory.firebasestorage.app",
