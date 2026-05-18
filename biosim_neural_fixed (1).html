@@ -5958,16 +5958,93 @@
       overlay.style.display = 'flex';
 
       try {
-        // Developer bypass PIN — full access, no Firebase, no trial limits
+        // Developer bypass PIN — skips accessPins validation but stores data to Firebase
         if (pin === 'BIOSIM123') {
-          state.userUid = 'dev_admin';
-          state.currentTrialId = `dev_trial_${Date.now()}`;
-          state.totalTrials = 1;
+          const { db, startNewSession } = await import('./firebase_config.js');
+          const { doc: fbDoc, getDoc: fbGet, setDoc: fbSet } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+          const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+          
+          // Ensure Firebase auth
+          const fbAuth = getAuth();
+          if (!fbAuth.currentUser) await signInAnonymously(fbAuth);
+          
+          const devUid = 'dev_admin';
+          const now = new Date().toISOString();
+          const devDocRef = fbDoc(db, 'users', devUid);
+          const devSnap = await fbGet(devDocRef);
+          
+          let devTrialId = `trial_${Date.now()}_dev`;
+          
+          // 7 empty case slots for each trial
+          const CASE_NAMES = ["MEMBRANE TRANSPORT","OSMOSIS & TONICITY","ACTIVE TRANSPORT & ENERGY","BIOELECTRICITY & AP","RADIATION & SHIELDING","LIPOSOME DELIVERY","RADIATION & DNA DAMAGE"];
+          const emptyCases = CASE_NAMES.map((name, i) => ({
+            caseId: i, caseName: name, startedAt: null, exitTime: null,
+            duration: 0, optimalTime: 0, stabilityScore: 0, actionsTaken: 0,
+            efficiencyPenalty: 0, totalScore: 0, grade: "", gradeLabel: "",
+            completed: false, completedAt: null
+          }));
+          
+          if (devSnap.exists()) {
+            // Returning dev — add new trial to existing history
+            statusText.textContent = "Starting Dev Session...";
+            const data = devSnap.data();
+            const history = data.trialsHistory || [];
+            const trialNum = (data.trialsUsed || 0) + 1;
+            history.push({
+              trialId: devTrialId, trialNumber: trialNum,
+              entryTime: now, exitTime: null, duration: 0, completedAt: null,
+              overallScore: 0, overallPercent: 0, overallGrade: "",
+              totalCasesCompleted: 0, finalOutcome: "IN_PROGRESS",
+              casesScores: emptyCases
+            });
+            await fbSet(devDocRef, {
+              ...data,
+              trialsHistory: history,
+              trialsUsed: trialNum,
+              trialsRemaining: 999,
+              lastLogin: now,
+              lastSessionId: devTrialId,
+              lastSessionDate: now
+            });
+            state.totalTrials = trialNum;
+          } else {
+            // First time dev — create full document
+            statusText.textContent = "Creating Dev Account...";
+            const newTrial = {
+              trialId: devTrialId, trialNumber: 1,
+              entryTime: now, exitTime: null, duration: 0, completedAt: null,
+              overallScore: 0, overallPercent: 0, overallGrade: "",
+              totalCasesCompleted: 0, finalOutcome: "IN_PROGRESS",
+              casesScores: emptyCases
+            };
+            await fbSet(devDocRef, {
+              studentName: nm || 'Developer', studentId: id || 'DEV-001',
+              pinCode: 'BIOSIM123', role: 'developer', accessGranted: true,
+              university: uni || '', faculty: fac || '', department: dept || '',
+              course: course || '', courseCode: code || '',
+              firstLogin: now, lastLogin: now, enterTime: now,
+              lastSessionDate: now, lastSessionId: devTrialId,
+              lastSessionGrade: "", lastSessionPercent: 0,
+              trialLimit: 9999, trialsUsed: 1, trialsRemaining: 9998,
+              totalScore: 0, bestTotalScore: 0, averageTotalScore: 0, completedCases: 0,
+              city: "", region: "", country: "", countryCode: "",
+              ipAddress: "", isp: "", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              coordinates: { latitude: 0, longitude: 0 },
+              platform: navigator.platform || "", userAgent: navigator.userAgent || "",
+              language: navigator.language || "", screenRes: `${screen.width}x${screen.height}`,
+              trialsHistory: [newTrial]
+            });
+            state.totalTrials = 1;
+          }
+          
+          state.userUid = devUid;
+          state.currentTrialId = devTrialId;
           state.userName = nm || 'Developer';
           state.userId = id || 'DEV-001';
           state.userPin = pin;
+          state.trialsRemaining = 999;
           document.getElementById('hud-trials-remaining').textContent = 'DEV MODE';
-          showAuthToast("Developer access granted. Full access enabled.", "success");
+          showAuthToast("Developer access granted. Data tracking enabled.", "success");
           setTimeout(() => {
             overlay.style.display = 'none';
             showScreen('intro');
