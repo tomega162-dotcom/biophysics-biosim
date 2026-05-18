@@ -5825,7 +5825,7 @@
 
       // Security Check: Trial Limits
       try {
-        const { db } = await import('./firebase_config.js');
+        const { db } = await import('./firebase_config.js?v=' + Date.now());
         const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
         const stdSnap = await getDoc(doc(db, "users", state.userUid || 'dummy'));
         if (stdSnap.exists() && (stdSnap.data().totalTrials || 0) >= 10) {
@@ -5958,7 +5958,7 @@
       overlay.style.display = 'flex';
 
       try {
-        const { validateStudentPin, activateStudent, startNewSession } = await import('./firebase_config.js');
+        const { validateStudentPin, activateStudent, startNewSession } = await import('./firebase_config.js?v=' + Date.now());
 
         statusText.textContent = "Authenticating PIN...";
         const authResult = await validateStudentPin(pin);
@@ -6132,7 +6132,7 @@
 
       // Log Case Start to Firebase (case entry within current session)
       try {
-        const { logCaseStart } = await import('./firebase_config.js');
+        const { logCaseStart } = await import('./firebase_config.js?v=' + Date.now());
         await logCaseStart(state.userUid, state.currentTrialId, {
           caseId: state.stage,
           caseName: STAGES[state.stage].title
@@ -6932,7 +6932,7 @@
       // Sync case score + grade to Firebase
       try {
         const caseDuration = treatmentDuration - (state.time || 0);
-        import('./firebase_config.js').then(m => {
+        import('./firebase_config.js?v=' + Date.now()).then(m => {
           m.syncStudentProgress(state.userUid, {
             trialId: state.currentTrialId,
             caseIndex: state.stage,
@@ -7054,7 +7054,7 @@
 
       // Sync final overall score + grade to Firebase (session-level summary)
       try {
-        import('./firebase_config.js').then(m => {
+        import('./firebase_config.js?v=' + Date.now()).then(m => {
           // Sync a special "final summary" entry that updates the session's overall outcome
           const studentRef = m.db ? m.doc(m.db, 'users', state.userUid) : null;
           // Use syncStudentProgress with a meta-update: sync the last case again
@@ -7544,7 +7544,7 @@
       try {
         const gradeLabel = success ? 'CELL SURVIVED' : 'CELL DECEASED';
         const gradeClass = success ? 'success' : 'critical';
-        import('./firebase_config.js').then(m => {
+        import('./firebase_config.js?v=' + Date.now()).then(m => {
           m.syncStudentProgress(state.userUid, {
             trialId: state.currentTrialId,
             caseIndex: state.stage,
