@@ -6001,7 +6001,8 @@
           // Returning student — start a new session/trial on every login
           statusText.textContent = "Starting New Session...";
           state.userUid = authResult.studentId;
-          state.totalTrials = (authResult.totalTrials || 0) + 1;
+          state.totalTrials = (authResult.trialsUsed || 0) + 1;
+          state.trialsRemaining = (authResult.trialsRemaining || 0) - 1;
           const trialId = await startNewSession(authResult.studentId);
           state.currentTrialId = trialId;
           showAuthToast("Welcome back, Researcher. New session started.", "success");
@@ -6012,7 +6013,7 @@
         state.userId = id || 'LAB-001';
         state.userPin = pin;
 
-        document.getElementById('hud-trials-remaining').textContent = `Session ${state.totalTrials}`;
+        document.getElementById('hud-trials-remaining').textContent = `Trial ${state.totalTrials} · ${state.trialsRemaining ?? 9} remaining`;
 
         setTimeout(() => {
           overlay.style.display = 'none';
@@ -7071,29 +7072,18 @@
       document.getElementById('summary-completed').textContent = `${completed} / ${STAGES.length}`;
       document.getElementById('summary-verdict').textContent = verdict;
 
-      // Sync final overall score + grade to Firebase (session-level summary)
+      // Sync trial summary to Firebase (session-level final result)
       try {
         import('./firebase_config.js').then(m => {
-          // Sync a special "final summary" entry that updates the session's overall outcome
-          const studentRef = m.db ? m.doc(m.db, 'users', state.userUid) : null;
-          // Use syncStudentProgress with a meta-update: sync the last case again
-          // to trigger the session-level aggregate recalc, then update the trial's finalOutcome
-          m.syncStudentProgress(state.userUid, {
+          m.syncTrialSummary(state.userUid, {
             trialId: state.currentTrialId,
-            caseIndex: STAGES.length - 1,
-            caseName: STAGES[STAGES.length - 1]?.name || 'Final',
-            duration: 0,
-            optimalTime: 0,
-            stabilityScore: 0,
-            actionsTaken: 0,
-            efficiencyPenalty: 0,
-            totalScore: state.caseScores[STAGES.length - 1]?.score || 0,
-            grade: state.caseScores[STAGES.length - 1]?.grade || '',
-            gradeLabel: overallGrade,
-            isComplete: true
+            totalScore: totalScore,
+            overallGrade: overallGrade,
+            overallPercent: Math.round(percentage * 10) / 10,
+            completedCases: completed
           });
         });
-      } catch (e) { console.error('Firebase final summary sync failed:', e); }
+      } catch (e) { console.error('Firebase trial summary sync failed:', e); }
 
       showScreen('summary');
     }

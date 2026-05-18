@@ -1,6 +1,6 @@
-// BioSim Firebase Integration Module — Clean Schema v3
+// BioSim Firebase Integration Module — Clean Schema v4
 // Collection: users (flat document with embedded trialsHistory array)
-// Hierarchy: PIN → Student Profile → Sessions/Trials → Case Data
+// Each trial contains exactly 7 pre-initialized case slots
 // Timestamps: ISO 8601 strings
 // Location: Detected via ipapi.co geolocation service
 
@@ -9,6 +9,7 @@ import {
     getFirestore,
     doc,
     getDoc,
+    setDoc,
     updateDoc,
     runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -31,6 +32,39 @@ db = getFirestore(app);
 auth = getAuth(app);
 
 // =====================================================================
+// CASE NAMES — used to pre-initialize 7 case slots
+// =====================================================================
+const CASE_NAMES = [
+    "MEMBRANE TRANSPORT",
+    "OSMOSIS & TONICITY",
+    "ACTIVE TRANSPORT & ENERGY",
+    "BIOELECTRICITY & AP",
+    "RADIATION & SHIELDING",
+    "LIPOSOME DELIVERY",
+    "RADIATION & DNA DAMAGE"
+];
+
+// Create 7 empty case slots for a new trial
+function createEmptyCaseSlots() {
+    return CASE_NAMES.map((name, i) => ({
+        caseId: i,
+        caseName: name,
+        startedAt: null,
+        exitTime: null,
+        duration: 0,
+        optimalTime: 0,
+        stabilityScore: 0,
+        actionsTaken: 0,
+        efficiencyPenalty: 0,
+        totalScore: 0,
+        grade: "",
+        gradeLabel: "",
+        completed: false,
+        completedAt: null
+    }));
+}
+
+// =====================================================================
 // GEOLOCATION DETECTION (ipapi.co — 1,000 free requests/day)
 // =====================================================================
 
@@ -42,38 +76,29 @@ async function detectLocation() {
         if (!res.ok) throw new Error('Geolocation API error');
         const data = await res.json();
 
-        const location = {};
-        if (data.city) location.city = data.city;
-        if (data.country_name) location.country = data.country_name;
-        if (data.latitude) location.latitude = data.latitude;
-        if (data.longitude) location.longitude = data.longitude;
-        if (data.ip) location.ipAddress = data.ip;
-        if (data.timezone) location.timezone = data.timezone;
-        else location.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        location.deviceInfo = navigator.userAgent || '';
-
-        return location;
+        return {
+            city: data.city || "",
+            region: data.region || "",
+            country: data.country_name || "",
+            countryCode: data.country_code || "",
+            postalCode: data.postal || "",
+            ipAddress: data.ip || "",
+            isp: data.org || "",
+            timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+            coordinates: {
+                latitude: data.latitude || 0,
+                longitude: data.longitude || 0
+            }
+        };
     } catch (e) {
         console.warn('Geolocation detection failed, using fallback:', e.message);
         return {
+            city: "", region: "", country: "", countryCode: "",
+            postalCode: "", ipAddress: "", isp: "",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            deviceInfo: navigator.userAgent || ''
+            coordinates: { latitude: 0, longitude: 0 }
         };
     }
-}
-
-// =====================================================================
-// HELPER: Build object with only non-empty fields
-// =====================================================================
-
-function cleanFields(obj) {
-    const clean = {};
-    for (const [key, val] of Object.entries(obj)) {
-        if (val !== undefined && val !== null && val !== '') {
-            clean[key] = val;
-        }
-    }
-    return clean;
 }
 
 // =====================================================================
@@ -83,6 +108,7 @@ function cleanFields(obj) {
 /**
  * Validate a student PIN and return status + student data.
  * Returns: { status: "NEW" | "RETURNING", studentId?, totalTrials?, studentData? }
+ * Throws: "INVALID_PIN", "LIMIT_EXCEEDED"
  */
 export async function validateStudentPin(pin) {
     try {
@@ -111,15 +137,18 @@ export async function validateStudentPin(pin) {
 
             const studentData = studentSnap.data();
 
-            // Enforce trial limit: max 10 PIN entries
-            if ((studentData.totalTrials || 0) >= 10) {
+            // Enforce trial limit
+            const limit = studentData.trialLimit || 10;
+            const used = studentData.trialsUsed || 0;
+            if (used >= limit) {
                 throw new Error("LIMIT_EXCEEDED");
             }
 
             return {
                 status: "RETURNING",
                 studentId: pinData.assignedTo,
-                totalTrials: studentData.totalTrials || 0,
+                trialsUsed: used,
+                trialsRemaining: limit - used,
                 studentData: studentData
             };
         }
@@ -137,8 +166,9 @@ export async function validateStudentPin(pin) {
 
 /**
  * Activate a new student account with a PIN.
- * Creates profile + starts the first session/trial automatically.
- * Returns { uid, trialId } so the UI can track the current session.
+ * Creates profile with all global fields + starts the first trial.
+ * Each trial is pre-initialized with 7 empty case slots.
+ * Returns { uid, trialId }
  */
 export async function activateStudent(pin, studentData) {
     try {
@@ -162,42 +192,78 @@ export async function activateStudent(pin, studentData) {
                 activatedAt: now
             });
 
-            // First session starts immediately on activation
-            const firstSession = {
+            // First trial with 7 pre-initialized case slots
+            const firstTrial = {
                 trialId: trialId,
-                trialType: "simulation_session",
+                trialNumber: 1,
                 entryTime: now,
                 exitTime: null,
                 duration: 0,
                 completedAt: null,
                 overallScore: 0,
                 overallPercent: 0,
+                overallGrade: "",
                 totalCasesCompleted: 0,
                 finalOutcome: "IN_PROGRESS",
-                casesScores: []
+                casesScores: createEmptyCaseSlots()
             };
 
-            // Build student document — only populated fields
-            const studentDoc = cleanFields({
-                studentId: studentData.studentId,
-                fullName: studentData.fullName,
-                university: studentData.university,
-                faculty: studentData.faculty,
-                department: studentData.department,
-                courseName: studentData.courseName,
-                courseCode: studentData.courseCode,
+            // Build student document — matches existing Firebase field names exactly
+            const studentDoc = {
+                // Identity
+                studentName: studentData.fullName || "",
+                studentId: studentData.studentId || "",
                 pinCode: pin,
                 role: "student",
+                accessGranted: true,
+
+                // Academic
+                university: studentData.university || "",
+                faculty: studentData.faculty || "",
+                department: studentData.department || "",
+                course: studentData.courseName || "",
+                courseCode: studentData.courseCode || "",
+
+                // Timestamps
                 firstLogin: now,
                 lastLogin: now,
-                totalTrials: 1,
+                enterTime: now,
+                lastSessionDate: now,
+
+                // Location & Device (flattened to match existing structure)
+                city: location.city,
+                region: location.region,
+                country: location.country,
+                countryCode: location.countryCode,
+                postalCode: location.postalCode,
+                ipAddress: location.ipAddress,
+                isp: location.isp,
+                timezone: location.timezone,
+                coordinates: location.coordinates,
+                platform: navigator.platform || "",
+                userAgent: navigator.userAgent || "",
+                language: navigator.language || "",
+                screenRes: `${screen.width}x${screen.height}`,
+
+                // Trial tracking
+                trialLimit: 10,
+                trialsUsed: 1,
+                trialsRemaining: 9,
+
+                // Score aggregates (global across all trials)
+                totalScore: 0,
+                bestTotalScore: 0,
+                averageTotalScore: 0,
                 completedCases: 0,
-                bestOverallScore: 0,
-                averageOverallScore: 0,
-                accessGranted: true,
-                location: location,
-                trialsHistory: [firstSession]
-            });
+
+                // Last session tracking
+                lastSessionId: trialId,
+                lastSessionGrade: "",
+                lastSessionPercent: 0,
+
+                // Trial data
+                trialsHistory: [firstTrial]
+            };
 
             transaction.set(studentRef, studentDoc);
         });
@@ -210,12 +276,13 @@ export async function activateStudent(pin, studentData) {
 }
 
 // =====================================================================
-// START NEW SESSION (Returning student — every login/refresh/re-entry)
+// START NEW SESSION (Returning student — every login/re-entry)
 // =====================================================================
 
 /**
- * Creates a new session/trial for a returning student.
- * Called every time a student logs in with an existing PIN.
+ * Creates a new trial for a returning student.
+ * Each trial has 7 pre-initialized case slots.
+ * Updates trialsUsed/trialsRemaining counters.
  * Returns the new trialId.
  */
 export async function startNewSession(studentUid) {
@@ -229,27 +296,36 @@ export async function startNewSession(studentUid) {
             if (!studentSnap.exists()) throw new Error("USER_NOT_FOUND");
             const data = studentSnap.data();
 
-            const newSession = {
+            const used = (data.trialsUsed || 0) + 1;
+            const limit = data.trialLimit || 10;
+
+            if (used > limit) throw new Error("LIMIT_EXCEEDED");
+
+            const newTrial = {
                 trialId: trialId,
-                trialType: "simulation_session",
+                trialNumber: used,
                 entryTime: now,
                 exitTime: null,
                 duration: 0,
                 completedAt: null,
                 overallScore: 0,
                 overallPercent: 0,
+                overallGrade: "",
                 totalCasesCompleted: 0,
                 finalOutcome: "IN_PROGRESS",
-                casesScores: []
+                casesScores: createEmptyCaseSlots()
             };
 
             const history = data.trialsHistory || [];
-            history.push(newSession);
+            history.push(newTrial);
 
             transaction.update(studentRef, {
                 trialsHistory: history,
-                totalTrials: (data.totalTrials || 0) + 1,
-                lastLogin: now
+                trialsUsed: used,
+                trialsRemaining: Math.max(0, limit - used),
+                lastLogin: now,
+                lastSessionId: trialId,
+                lastSessionDate: now
             });
         });
 
@@ -261,17 +337,12 @@ export async function startNewSession(studentUid) {
 }
 
 // =====================================================================
-// LOG CASE START (add case entry to current session)
+// LOG CASE START (mark a case as started within current trial)
 // =====================================================================
 
 /**
- * Adds a new case entry to the current session's casesScores array.
- * Called when the student begins a specific case (e.g. Case 1, Case 2).
- * Does NOT create a new trial — the trial was created at login.
- *
- * @param {string} studentUid
- * @param {string} trialId - The current session's trialId
- * @param {object} caseData - { caseId, caseName }
+ * Updates the pre-initialized case slot with a startedAt timestamp.
+ * Does NOT create a new entry — the 7 slots already exist.
  */
 export async function logCaseStart(studentUid, trialId, caseData) {
     const studentRef = doc(db, "users", studentUid);
@@ -288,27 +359,12 @@ export async function logCaseStart(studentUid, trialId, caseData) {
             if (trialIndex === -1) return;
 
             const trial = history[trialIndex];
+            const caseIndex = caseData.caseId;
 
-            // Add the new case (avoid duplicates if re-starting same case)
-            const existingIdx = trial.casesScores.findIndex(c => c.caseId === caseData.caseId);
-            const caseEntry = {
-                caseId: caseData.caseId,
-                caseName: caseData.caseName || `Case ${caseData.caseId}`,
-                startedAt: now,
-                duration: 0,
-                optimalTime: 0,
-                stabilityScore: 0,
-                actionsTaken: 0,
-                efficiencyPenalty: 0,
-                totalScore: 0,
-                completed: false
-            };
-
-            if (existingIdx !== -1) {
-                // Re-starting same case — overwrite
-                trial.casesScores[existingIdx] = caseEntry;
-            } else {
-                trial.casesScores.push(caseEntry);
+            // Update the pre-initialized slot (direct index access)
+            if (caseIndex >= 0 && caseIndex < 7 && trial.casesScores[caseIndex]) {
+                trial.casesScores[caseIndex].startedAt = now;
+                trial.casesScores[caseIndex].caseName = caseData.caseName || CASE_NAMES[caseIndex];
             }
 
             history[trialIndex] = trial;
@@ -323,23 +379,25 @@ export async function logCaseStart(studentUid, trialId, caseData) {
 }
 
 // =====================================================================
-// SYNC CASE COMPLETION (update case scores + session aggregates)
+// SYNC CASE COMPLETION (update case scores within current trial)
 // =====================================================================
 
 /**
- * Updates a case's final scores within the current session.
- * Recalculates session and profile aggregates.
+ * Updates a completed case's scores within the current trial.
+ * Uses direct array index (0-6) instead of findIndex.
+ * Recalculates trial-level aggregates.
  *
  * @param {string} studentUid
  * @param {object} progressData - {
- *   trialId, caseIndex, caseName,
+ *   trialId, caseIndex (0-6), caseName,
  *   duration, optimalTime, stabilityScore,
  *   actionsTaken, efficiencyPenalty, totalScore,
- *   isComplete
+ *   grade, gradeLabel, isComplete
  * }
  */
 export async function syncStudentProgress(studentUid, progressData) {
     if (!progressData.trialId) return;
+    if (progressData.caseIndex < 0 || progressData.caseIndex > 6) return;
 
     const studentRef = doc(db, "users", studentUid);
     const now = new Date().toISOString();
@@ -355,15 +413,16 @@ export async function syncStudentProgress(studentUid, progressData) {
             if (trialIndex === -1) return;
 
             const trial = history[trialIndex];
+            const caseIndex = progressData.caseIndex;
 
-            // Update the specific case
-            const caseIdx = trial.casesScores.findIndex(c => c.caseId === progressData.caseIndex);
-            // Preserve startedAt from the original logCaseStart entry
-            const existingCase = caseIdx !== -1 ? trial.casesScores[caseIdx] : null;
-            const caseScore = {
-                caseId: progressData.caseIndex,
-                caseName: progressData.caseName || `Case ${progressData.caseIndex}`,
-                startedAt: existingCase?.startedAt || now,
+            // Preserve startedAt from the original logCaseStart
+            const existingStartedAt = trial.casesScores[caseIndex]?.startedAt || now;
+
+            // Update the case slot directly by index
+            trial.casesScores[caseIndex] = {
+                caseId: caseIndex,
+                caseName: progressData.caseName || CASE_NAMES[caseIndex],
+                startedAt: existingStartedAt,
                 exitTime: progressData.isComplete ? now : null,
                 duration: progressData.duration || 0,
                 optimalTime: progressData.optimalTime || 0,
@@ -371,60 +430,122 @@ export async function syncStudentProgress(studentUid, progressData) {
                 actionsTaken: progressData.actionsTaken || 0,
                 efficiencyPenalty: progressData.efficiencyPenalty || 0,
                 totalScore: progressData.totalScore || 0,
-                grade: progressData.grade || '',
-                gradeLabel: progressData.gradeLabel || '',
+                grade: progressData.grade || "",
+                gradeLabel: progressData.gradeLabel || "",
                 completed: progressData.isComplete || false,
                 completedAt: progressData.isComplete ? now : null
             };
 
-            if (caseIdx !== -1) {
-                trial.casesScores[caseIdx] = caseScore;
-            } else {
-                trial.casesScores.push(caseScore);
-            }
-
-            // Recalculate session-level aggregates
+            // Recalculate trial-level aggregates from all 7 case slots
             const completedCases = trial.casesScores.filter(c => c.completed);
             trial.totalCasesCompleted = completedCases.length;
             trial.overallScore = trial.casesScores.reduce((sum, c) => sum + (c.totalScore || 0), 0);
-            trial.overallPercent = trial.casesScores.length > 0
-                ? Math.round(trial.overallScore / trial.casesScores.length)
-                : 0;
+            // Max possible = 7 cases × 140 points = 980
+            trial.overallPercent = Math.round((trial.overallScore / 980) * 100);
 
-            // Update session timing
+            // Update trial timing
             const entryMs = new Date(trial.entryTime).getTime();
             trial.duration = Math.round((Date.now() - entryMs) / 1000);
 
-            if (progressData.isComplete) {
-                trial.exitTime = now;
-                trial.completedAt = now;
-                // Store the overall grade label if provided (e.g., DISTINCTION, MERIT, PASS)
-                trial.finalOutcome = progressData.gradeLabel || "COMPLETED";
-                if (progressData.grade) trial.finalGrade = progressData.grade;
-            }
-
             history[trialIndex] = trial;
 
-            // Recalculate profile-level aggregates from ALL sessions
-            const allSessionScores = history
+            // Recalculate global aggregates from ALL trials
+            const allTrialScores = history
                 .filter(t => t.totalCasesCompleted > 0)
                 .map(t => t.overallScore);
-            const bestScore = allSessionScores.length > 0 ? Math.max(...allSessionScores) : 0;
-            const avgScore = allSessionScores.length > 0
-                ? Math.round(allSessionScores.reduce((a, b) => a + b, 0) / allSessionScores.length)
+            const bestScore = allTrialScores.length > 0 ? Math.max(...allTrialScores) : 0;
+            const avgScore = allTrialScores.length > 0
+                ? Math.round(allTrialScores.reduce((a, b) => a + b, 0) / allTrialScores.length)
                 : 0;
-            const totalCompletedCases = history.reduce((sum, t) => sum + t.totalCasesCompleted, 0);
+            const totalCompletedCases = history.reduce((sum, t) => sum + (t.totalCasesCompleted || 0), 0);
+            const latestTotalScore = trial.overallScore;
 
             transaction.update(studentRef, {
                 trialsHistory: history,
                 completedCases: totalCompletedCases,
-                bestOverallScore: bestScore,
-                averageOverallScore: avgScore,
-                lastLogin: now
+                bestTotalScore: bestScore,
+                averageTotalScore: avgScore,
+                totalScore: latestTotalScore,
+                lastLogin: now,
+                lastSessionDate: now
             });
         });
     } catch (error) {
         console.error("Progress Sync Error:", error);
+    }
+}
+
+// =====================================================================
+// SYNC TRIAL SUMMARY (called when all 7 cases are done or session ends)
+// =====================================================================
+
+/**
+ * Updates the trial's final outcome, grade, and overall stats.
+ * Also updates global last-session fields.
+ *
+ * @param {string} studentUid
+ * @param {object} summaryData - {
+ *   trialId, totalScore, overallGrade, overallPercent, completedCases
+ * }
+ */
+export async function syncTrialSummary(studentUid, summaryData) {
+    if (!summaryData.trialId) return;
+
+    const studentRef = doc(db, "users", studentUid);
+    const now = new Date().toISOString();
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const studentSnap = await transaction.get(studentRef);
+            if (!studentSnap.exists()) return;
+            const data = studentSnap.data();
+
+            const history = data.trialsHistory || [];
+            const trialIndex = history.findIndex(t => t.trialId === summaryData.trialId);
+            if (trialIndex === -1) return;
+
+            const trial = history[trialIndex];
+
+            // Update trial-level summary
+            trial.exitTime = now;
+            trial.completedAt = now;
+            trial.overallScore = summaryData.totalScore || trial.overallScore;
+            trial.overallPercent = summaryData.overallPercent || trial.overallPercent;
+            trial.overallGrade = summaryData.overallGrade || "";
+            trial.totalCasesCompleted = summaryData.completedCases || trial.totalCasesCompleted;
+            trial.finalOutcome = summaryData.overallGrade || "COMPLETED";
+
+            // Update trial timing
+            const entryMs = new Date(trial.entryTime).getTime();
+            trial.duration = Math.round((Date.now() - entryMs) / 1000);
+
+            history[trialIndex] = trial;
+
+            // Recalculate global aggregates from ALL trials
+            const allTrialScores = history
+                .filter(t => t.totalCasesCompleted > 0)
+                .map(t => t.overallScore);
+            const bestScore = allTrialScores.length > 0 ? Math.max(...allTrialScores) : 0;
+            const avgScore = allTrialScores.length > 0
+                ? Math.round(allTrialScores.reduce((a, b) => a + b, 0) / allTrialScores.length)
+                : 0;
+            const totalCompletedCases = history.reduce((sum, t) => sum + (t.totalCasesCompleted || 0), 0);
+
+            transaction.update(studentRef, {
+                trialsHistory: history,
+                completedCases: totalCompletedCases,
+                bestTotalScore: bestScore,
+                averageTotalScore: avgScore,
+                totalScore: summaryData.totalScore || trial.overallScore,
+                lastLogin: now,
+                lastSessionId: summaryData.trialId,
+                lastSessionDate: now,
+                lastSessionGrade: summaryData.overallGrade || "",
+                lastSessionPercent: summaryData.overallPercent || 0
+            });
+        });
+    } catch (error) {
+        console.error("Trial Summary Sync Error:", error);
     }
 }
 
