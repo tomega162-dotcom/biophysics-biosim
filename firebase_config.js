@@ -188,7 +188,7 @@ export async function activateStudent(pin, studentData) {
             // Admin PINs get unlimited trials, students get 10
             const pinRole = pinSnap.data().role || "student";
             const isAdmin = pinRole === "admin";
-            const trialLimit = isAdmin ? 9999 : 10;
+            const trialLimit = 9999;
 
             // Mark PIN as used
             transaction.update(pinRef, {
