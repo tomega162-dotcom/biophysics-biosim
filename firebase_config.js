@@ -19,12 +19,12 @@ let db, auth;
 
 // Firebase Project Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyACpdrPCeL5qC1wTEcoMp8GKQaHYjwb-M4",
-    authDomain: "biosim-laboratory.firebaseapp.com",
-    projectId: "biosim-laboratory",
-    storageBucket: "biosim-laboratory.firebasestorage.app",
-    messagingSenderId: "572026392525",
-    appId: "1:572026392525:web:eddbca8b3759e8c739be84"
+    apiKey: "AIzaSyDzy5Vxzz-IAukk3tE_9647J78rAgp2IdE",
+    authDomain: "biosim-lab-v2.firebaseapp.com",
+    projectId: "biosim-lab-v2",
+    storageBucket: "biosim-lab-v2.firebasestorage.app",
+    messagingSenderId: "341124314812",
+    appId: "1:341124314812:web:13d75d9924b143ddaf02b9"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -185,6 +185,11 @@ export async function activateStudent(pin, studentData) {
             if (!pinSnap.exists()) throw new Error("INVALID_PIN");
             if (pinSnap.data().used) throw new Error("PIN_ALREADY_USED");
 
+            // Admin PINs get unlimited trials, students get 10
+            const pinRole = pinSnap.data().role || "student";
+            const isAdmin = pinRole === "admin";
+            const trialLimit = isAdmin ? 9999 : 10;
+
             // Mark PIN as used
             transaction.update(pinRef, {
                 used: true,
@@ -214,7 +219,7 @@ export async function activateStudent(pin, studentData) {
                 studentName: studentData.fullName || "",
                 studentId: studentData.studentId || "",
                 pinCode: pin,
-                role: "student",
+                role: pinRole,
                 accessGranted: true,
 
                 // Academic
@@ -246,9 +251,9 @@ export async function activateStudent(pin, studentData) {
                 screenRes: `${screen.width}x${screen.height}`,
 
                 // Trial tracking
-                trialLimit: 10,
+                trialLimit: trialLimit,
                 trialsUsed: 1,
-                trialsRemaining: 9,
+                trialsRemaining: trialLimit - 1,
 
                 // Score aggregates (global across all trials)
                 totalScore: 0,

@@ -3,12 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyACpdrPCel5qc1wTECoMp8GKQaHYjwb-M4",
-    authDomain: "biosim-laboratory.firebaseapp.com",
-    projectId: "biosim-laboratory",
-    storageBucket: "biosim-laboratory.firebasestorage.app",
-    messagingSenderId: "572026392525",
-    appId: "1:572026392525:web:eddbca8b3759e8c739be84"
+    apiKey: "AIzaSyDzy5Vxzz-IAukk3tE_9647J78rAgp2IdE",
+    authDomain: "biosim-lab-v2.firebaseapp.com",
+    projectId: "biosim-lab-v2",
+    storageBucket: "biosim-lab-v2.firebasestorage.app",
+    messagingSenderId: "341124314812",
+    appId: "1:341124314812:web:13d75d9924b143ddaf02b9"
 };
 
 const app = initializeApp(firebaseConfig);

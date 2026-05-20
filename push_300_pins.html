@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BioSim — Push 300 PINs to New Firebase</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: #1e293b; border-radius: 16px; padding: 40px; max-width: 600px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+        h1 { margin: 0 0 8px; font-size: 22px; color: #38bdf8; }
+        .sub { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+        .stat { display: flex; gap: 20px; margin-bottom: 24px; }
+        .stat-item { background: #0f172a; padding: 16px; border-radius: 10px; flex: 1; text-align: center; }
+        .stat-val { font-size: 28px; font-weight: 700; color: #38bdf8; }
+        .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+        button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-push { background: #2563eb; color: white; }
+        .btn-push:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-push:disabled { background: #334155; color: #64748b; cursor: not-allowed; transform: none; }
+        .btn-done { background: #059669; color: white; }
+        .log { margin-top: 20px; background: #0f172a; border-radius: 8px; padding: 16px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.8; }
+        .log-ok { color: #4ade80; }
+        .log-err { color: #f87171; }
+        .log-info { color: #94a3b8; }
+        .progress { background: #334155; border-radius: 6px; height: 8px; margin-top: 16px; overflow: hidden; }
+        .progress-bar { background: linear-gradient(90deg, #2563eb, #38bdf8); height: 100%; width: 0%; transition: width 0.3s; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔑 Push 300 PINs to New Firebase</h1>
+        <div class="sub">Target: <strong>biosim-lab-v2</strong> → Collection: <strong>accessPins</strong></div>
+        
+        <div class="stat">
+            <div class="stat-item">
+                <div class="stat-val">300</div>
+                <div class="stat-label">Student PINs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">1</div>
+                <div class="stat-label">Admin PIN</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" id="pushed-count">0</div>
+                <div class="stat-label">Pushed</div>
+            </div>
+        </div>
+
+        <button id="btn-push" class="btn-push" onclick="pushAllPins()">🚀 Push All 301 PINs to Firestore</button>
+        
+        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzy5Vxzz-IAukk3tE_9647J78rAgp2IdE",
+            authDomain: "biosim-lab-v2.firebaseapp.com",
+            projectId: "biosim-lab-v2",
+            storageBucket: "biosim-lab-v2.firebasestorage.app",
+            messagingSenderId: "341124314812",
+            appId: "1:341124314812:web:13d75d9924b143ddaf02b9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // The exact 300 PINs from biosim_300_pins.txt
+        const STUDENT_PINS = [
+            "0CuCWj5ez6","0QZJOOGQiR","0amtvDYKDZ","0n2VWW6N0D","16UOODBus4",
+            "1Msa8hYqX7","1ghn8CcFY2","1zDOMhywZN","268XyUCEMv","2KQRRQ6XhR",
+            "2Va3CRDt4L","3IZNt11bVG","3O1lDssEsx","3QSaVbiZr5","3buwbogPi1",
+            "3eHfREcOKb","4L4xmsrNXI","4dEAf6JkHX","4rRTgCoitX","4tdGumc8Fm",
+            "5K7WYIXq8n","5KBqhg1uTP","5MDKPXfjIt","5mPQYq0TdE","5yEATcg9o4",
+            "602FPo48zV","62CIaGERCW","64bROf87VB","6808Eqkckd","6AQrjGbR4B",
+            "6LumGlhmiN","6OB9iBRahH","6d4zO6cbr4","6f67yUPIy1","773sgh25ag",
+            "7FpRRcm5dV","7dVUcX3lQp","85MjLMTPWR","8IdNIgu9wi","8WOTn6TA7h",
+            "91DwbgvlOu","9K8ggFuFYz","9KPbHgjckd","9RSzCEVW0Z","9XT9WgQPwa",
+            "9a47lT6Zx5","9bDJGX7uDV","9eakHtHwUw","9lOGYOPHQG","ABedUru4Lj",
+            "AlW4TAaoRJ","B4waAuIRb9","BFxw4uBTw9","BRt2TKQ18I","BlRKWWjuAM",
+            "BnWpELmJ0D","C1XYokz1T5","C4FcUqE48n","CLqFncPSK8","CUiSUbHVMh",
+            "CXL9SxDKFn","Cd23Ic2rL6","CiAoDgd79x","CuiGmVfZcw","D1JlEmSRF0",
+            "D3YQApuQ8B","D6RWOiia2P","DBCYywdVlj","DIH4Hyaa3w","DbGrqWb3iU",
+            "DfVfSL6TWw","DjOhCG9o1i","E0i2R40LjG","EAYz0xATpN","EsjrwOKibo",
+            "EvxUDtQLxc","FGmWBtMG4E","FJh1uAFhda","FKdi9Rzcp1","FP7K7OclP3",
+            "FhWpOcrjaV","FhncLxlZVk","FkGQOsde0O","Fqz4DK6RAj","GJK3J6LGXA",
+            "GUJkJHFJPA","GitBTFGEbc","H80XD3sEbN","HBxK2JxKLi","HOY3YRXSXL",
+            "HVRwKQUb4W","HoNWiViaXJ","I2TtzoVXxZ","I7FYtHGthY","IFp0zgtEzs",
+            "Is4mgEsFAr","JFLlA2gQh3","JNgJrV2DmX","JXRf7LFoiq","Jf0WeVaGPX",
+            "JhkNn78hRk","JmnmivdaI9","K5W0AY1VIG","KEk70cTKyy","KFEtnCPNI5",
+            "KHu7BJb7im","Ks5us1RYGj","L3x1xEFCxv","LJqMlBDGDU","LcOEVvPGto",
+            "LhcGjIKJbf","LzXYqFsSAf","M98M3EQ2tQ","M9qvkfMSJM","MAKNqCjSkH",
+            "MBtOoDYPAt","N18UC8GeJl","N28hvdDVpG","NBkmvASNeF","NUrGlOhj2p",
+            "NYAhwF4fLp","NqmsqHQpGU","OJLl5HUlRP","OSMdRs9I9g","OYBmjmkIG9",
+            "On7IjQNA8Q","OqTeXmoMlU","Ov2uls2sne","P3sMz5a98Z","P9naIRlaZ2",
+            "PGQhNOuFht","PJqZYCLDvc","PVRgX1JhqO","Q7QnU2Lhm1","QC8vnF5AE6",
+            "QCiV76IqKb","QQ12npv14W","QQ1nPygcvC","QQtZ6ygfaO","QhjNlJYfMz",
+            "Qn11E7cXn1","R6RConJpcM","RCle50hnXu","RK1BsaW4bw","RVbq5mYioc",
+            "RY70Zf116a","RkauGjYsN0","RlFVsE70xH","RnSYGvL9fV","Rs8xAXDv37",
+            "RsIde1PQL6","STgjod3saX","SmUhPQr9oV","SyhKHqTKfA","T32E7gsXTS",
+            "TBUFQlSThG","TaGCr5hUbL","TlG4UCcnxO","To8NaRpuEV","Tq5UBa3iSe",
+            "TwFXjZzhxJ","U5xbU25jpg","UDGa3tUmuO","UFgsm5a8za","UKbASu5wWK",
+            "UPQvwL77kR","UV94Bn5WA1","UZBKtSbNbM","Uqw9wJYuMK","UzM10X55eU",
+            "V70i6of12h","Vq6qd3bI2d","W4tBgtplUJ","WLfkCaiheh","WkYzHQHLsQ",
+            "WwnrnVb24t","XP8n1Pp6jh","Xdepq2ncou","XjrGtbR9zU","XvPcwoKchI",
+            "YdPSrC8yht","ZDHi3w5aCw","aeXJiWnO1r","am4ph00WVS","aqMNb5zl6B",
+            "b0SeTi667N","b7NEKdthdF","b7YJkgqCyY","bIVhzoYMNX","bYdp81SWZW",
+            "bkFXt0U4TZ","bpAjhTQHm0","bu1S4npKsf","bwktD90Kkj","bwswp2F0ej",
+            "c6qDUsJAec","cnznxDo7Cu","cvfzj6IPpo","d9NzmXyMnF","dGtabY6D3T",
+            "dKg2GleNfU","dXOyHNs1bb","diJU8K9m2u","dzdm35jIr2","eGQeYW20SC",
+            "eS1zG44gSz","fHIibAYygU","fabCgIyTEW","gb2BEcaxwj","gc4xFSwaLP",
+            "gudJ3HgZNa","h1HdiKxB2k","h7hcRDFROb","hG8ZUQqxhX","hV5SKeYD1r",
+            "hWvWpEb7fF","hoTIAf7GNI","hwUfHaTDJb","iFMbIAFMkY","iKRnNMfRXQ",
+            "idvA9lUd60","ikF909tpqH","isI9RrzugH","j2N7iPmPDa","jPdgyFHMdL",
+            "jRBYmNQFNK","jXsR45sOEb","jZDygoURRS","jlA8O4UM4A","joYbvrKyCw",
+            "k7xDKYvKA5","kDwcIoo6MQ","kK2xIsh1rI","kRxx28Ch2U","lQ0MIknyhK",
+            "lXbOrQ7kbK","mOpvMn63IU","mppxqqfPoN","mvsMVInBBL","n940f9r2sV",
+            "nU9TJeotvI","oD2kNNJkqJ","oiP2YuUAkQ","om2s8I7qP3","ownhTJ88J8",
+            "p2nMcXbd0j","p2zZyhKcup","p5f6wxT5hm","pTkV1DaR9A","phyQ8CH9Bh",
+            "pqQo0zlFv4","pr8hMUXtgR","pyJXV8hzcX","qCHdKdiz03","qtkuV4pfAE",
+            "qvytPlClrF","r9yXTrU0Gt","rDXnnumGcr","rVSsilADR9","ri0laJs48a",
+            "ro0OeZ7VTO","rqtoegtBC8","s0t1W8eP8F","s5XngOBXXk","sDhZkI13v3",
+            "sPY7E7tbcG","sxYbB4QW0J","tKmLVEbmo2","tRo0kPzmqU","u8o03z3ZBp",
+            "uBlGr0RsRw","uCEvX3CWoT","uKir1XOsEN","ucpgUIgmVj","vCDfcQzPW4",
+            "vCtzY4a4PK","vDJF8oyvVE","vL4cJMkK1K","vRZHOSp0uq","vfXbhVPe87",
+            "vxUNLAeUZ1","w0ncfeOjbh","wNG7YQym3w","wakZb3T4t7","wgs53jCnEu",
+            "wrVaomimEs","x0yf4i8FVK","xMcRF9K5CC","xcmWz3QNU8","xkMnLNRTZj",
+            "xtEb15XYw9","y6KUm17Ndc","yANdQkUjFl","yEfP2P1OHs","yXPIJ5yrbt",
+            "yeZUicdmks","yfrvUN4dHz","yvLnvqGA0E","z2p4QTJR7p","za8pYKx9uq"
+        ];
+
+        const ADMIN_PIN = "B#8&zP9!kL2$";
+
+        function log(msg, type = 'info') {
+            const el = document.getElementById('log');
+            el.innerHTML += `<div class="log-${type}">${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        window.pushAllPins = async function() {
+            const btn = document.getElementById('btn-push');
+            btn.disabled = true;
+            btn.textContent = '⌛ Authenticating...';
+
+            try {
+                // Step 1: Anonymous Auth
+                log('Authenticating with Firebase...', 'info');
+                await signInAnonymously(auth);
+                log('✅ Authentication successful', 'ok');
+
+                // Step 2: Push PINs in batch (max 500 per batch, we have 301)
+                btn.textContent = '⌛ Pushing 301 PINs...';
+                const now = new Date().toISOString();
+                const batch = writeBatch(db);
+                let count = 0;
+
+                // Admin PIN
+                const adminRef = doc(db, "accessPins", ADMIN_PIN);
+                batch.set(adminRef, {
+                    pinCode: ADMIN_PIN,
+                    used: false,
+                    assignedTo: null,
+                    role: "admin",
+                    createdAt: now
+                });
+                count++;
+                log(`[${count}/301] Admin PIN: B#8&zP9!kL2$`, 'ok');
+
+                // Student PINs
+                for (const pin of STUDENT_PINS) {
+                    const pinRef = doc(db, "accessPins", pin);
+                    batch.set(pinRef, {
+                        pinCode: pin,
+                        used: false,
+                        assignedTo: null,
+                        role: "student",
+                        createdAt: now
+                    });
+                    count++;
+                    if (count % 50 === 0) {
+                        log(`[${count}/301] Processing... (${pin})`, 'info');
+                        document.getElementById('progress-bar').style.width = `${(count / 301) * 100}%`;
+                        document.getElementById('pushed-count').textContent = count;
+                    }
+                }
+
+                log('Committing batch to Firestore...', 'info');
+                await batch.commit();
+
+                document.getElementById('progress-bar').style.width = '100%';
+                document.getElementById('pushed-count').textContent = '301';
+                
+                log('', 'ok');
+                log('═══════════════════════════════════════', 'ok');
+                log('✅ SUCCESS: All 301 PINs pushed to biosim-lab-v2!', 'ok');
+                log('   → 300 Student PINs (role: student)', 'ok');
+                log('   → 1 Admin PIN (role: admin)', 'ok');
+                log('   → Collection: accessPins', 'ok');
+                log('═══════════════════════════════════════', 'ok');
+                
+                btn.textContent = '✅ All 301 PINs Activated!';
+                btn.className = 'btn-done';
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, 'err');
+                log('Check: 1) Anonymous Auth enabled? 2) Firestore created? 3) Rules set?', 'err');
+                btn.disabled = false;
+                btn.textContent = '🔄 Retry Push';
+            }
+        };
+
+        // Initial log
+        log('Ready to push 300 student PINs + 1 admin PIN to biosim-lab-v2', 'info');
+        log('These are the SAME PINs from biosim_300_pins.txt', 'info');
+        log('Click the button when ready.', 'info');
+    </script>
+</body>
+</html>
