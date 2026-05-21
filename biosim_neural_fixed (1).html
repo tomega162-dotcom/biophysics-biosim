@@ -6953,9 +6953,39 @@
       const stabRatio = (state.optimalSeconds || 0) / treatmentTime;
       const stabScore = Math.round(stabRatio * 25);
 
-      // 3. Intervention Efficiency (0-20) — fewer actions = better
+      // 3. Intervention Efficiency (0-20) — must take action, but not too many
       const actCount = state.sliderActionCount || 0;
-      const effScore = actCount <= 5 ? 20 : actCount <= 10 ? 15 : actCount <= 15 ? 10 : actCount <= 25 ? 5 : 0;
+      // Check if the correct parameter was moved toward the solution
+      const variant = state._activeVariant;
+      const targetParam = variant?.targetIntervention?.param;
+      const targetDir = variant?.targetIntervention?.dir; // +1 or -1
+      let correctActionTaken = false;
+      if (targetParam && targetDir && state._sliderHistory) {
+        const history = state._sliderHistory[targetParam];
+        if (history && history.length >= 2) {
+          const firstVal = history[0];
+          const lastVal = history[history.length - 1];
+          const moved = lastVal - firstVal;
+          // Did they move the right parameter in the right direction?
+          correctActionTaken = (targetDir > 0 && moved > 5) || (targetDir < 0 && moved < -5);
+        }
+      }
+      // Also check if params ended up in optimal range
+      const finalInRange = countParamsInOptimalRange();
+      const totalOptParams = getOptimalParamCount();
+      const paramsFixed = finalInRange >= totalOptParams;
+
+      let effScore;
+      if (actCount === 0) {
+        // Zero actions = zero efficiency — the case requires intervention
+        effScore = 0;
+      } else if (correctActionTaken || paramsFixed) {
+        // Correct actions taken — reward precision
+        effScore = actCount <= 5 ? 20 : actCount <= 10 ? 16 : actCount <= 15 ? 12 : actCount <= 25 ? 6 : 2;
+      } else {
+        // Actions taken but wrong direction / random — partial credit
+        effScore = actCount <= 5 ? 8 : actCount <= 10 ? 5 : actCount <= 15 ? 3 : 0;
+      }
 
       // 4. Parameter Precision (0-15) — how close to optimal center
       const precScore = Math.min(15, Math.round((state._precisionAccum || 0) / Math.max(1, treatmentTime) * 15));
@@ -6969,11 +6999,18 @@
         alertScore = 8; // No alert = neutral score
       }
 
-      // 6. Biological Plausibility (0-10) — penalize impossible parameter combos
-      let bioScore = 10;
-      if (actCount > 20) bioScore -= 3; // Over-manipulation
-      if (state._rapidWarnShown) bioScore -= 4; // Triggered rapid-change warning
-      bioScore = Math.max(0, bioScore);
+      // 6. Biological Plausibility (0-10) — requires engagement
+      let bioScore;
+      if (actCount === 0) {
+        // No actions at all = no engagement = 0
+        bioScore = 0;
+      } else {
+        bioScore = 10;
+        if (actCount > 20) bioScore -= 3; // Over-manipulation
+        if (state._rapidWarnShown) bioScore -= 4; // Triggered rapid-change warning
+        if (!correctActionTaken && !paramsFixed) bioScore -= 3; // Wrong direction
+        bioScore = Math.max(0, bioScore);
+      }
 
       // 7. Over-Control Penalty (0 to -15)
       const overPenalty = Math.min(15, Math.max(0, actCount - 10) * 1);
