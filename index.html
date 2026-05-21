@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v4.1 - BIOSIM123 Firebase Storage Enabled -->
+<!-- v4.2 - Synced with biosim_neural_fixed -->
 <html lang="en">
 
 <head>
@@ -190,9 +190,9 @@
       transform: scale(1.08);
     }
 
-      width: 1px;
-      height: 48px;
-      background: linear-gradient(to bottom, transparent, var(--border2), transparent);
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, var(--border2), transparent);
     }
 
     /* Hero */
@@ -2764,115 +2764,116 @@
 
       <!-- Logo Bar -->
       <div style="text-align:center; margin-bottom: 40px;">
-        <img src="assets/bridge_capital_logo.png?v=5" alt="Bridge Capital Financial Solutions" style="height:160px; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.15);">
+        <img src="assets/bridge_capital_logo.png?v=5" alt="Bridge Capital Financial Solutions"
+          style="height:160px; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.15);">
       </div>
-      </div>
-
-      <!-- Hero Section -->
-      <div class="entry-hero">
-        <div class="entry-hero-badge">⚛ BioSim v3.0 — Advanced Edition</div>
-        <h1>Welcome to the <span>Biophysics Laboratory</span> Platform</h1>
-        <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in
-          real-time biophysical simulations.</p>
-      </div>
-
-      <!-- Student Information Card -->
-      <div class="entry-card">
-        <div class="entry-card-header">
-          <div class="entry-card-icon">🔬</div>
-          <div class="entry-card-title">Researcher Credentials</div>
-        </div>
-        <div class="entry-info-grid">
-
-          <!-- Student Name (editable) -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Student Name</div>
-              <input class="field-input" id="input-name" type="text" placeholder="Enter your full name..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Student ID (editable) -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Student ID</div>
-              <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- University Name -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">University</div>
-              <input class="field-input" id="input-university" type="text" placeholder="Enter university name..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Faculty Name -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Faculty</div>
-              <input class="field-input" id="input-faculty" type="text" placeholder="Enter faculty name..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Department Name -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Department</div>
-              <input class="field-input" id="input-department" type="text" placeholder="Enter department name..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Course Name -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Course</div>
-              <input class="field-input" id="input-course" type="text" placeholder="Enter course name..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Course Code -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Course Code</div>
-              <input class="field-input" id="input-course-code" type="text" placeholder="Enter course code..."
-                autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Secure Access PIN -->
-          <div class="entry-info-item">
-            <div class="field-group">
-              <div class="field-label">Secure Access PIN</div>
-              <div class="bin-code-display">
-                <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15"
-                  autocomplete="off">
-                <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Launch Button -->
-        <div style="text-align:center;">
-          <button class="btn-primary" onclick="startEntry()"><span>Initialize Simulation →</span></button>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="entry-footer">
-        <p>Faculty of Biotechnology · Prototyping Lab · MSA University</p>
-      </div>
-
     </div>
+
+    <!-- Hero Section -->
+    <div class="entry-hero">
+      <div class="entry-hero-badge">⚛ BioSim v3.0 — Advanced Edition</div>
+      <h1>Welcome to the <span>Biophysics Laboratory</span> Platform</h1>
+      <p class="entry-hero-sub">Enjoy your interactive scientific experience — observe, diagnose, and intervene in
+        real-time biophysical simulations.</p>
+    </div>
+
+    <!-- Student Information Card -->
+    <div class="entry-card">
+      <div class="entry-card-header">
+        <div class="entry-card-icon">🔬</div>
+        <div class="entry-card-title">Researcher Credentials</div>
+      </div>
+      <div class="entry-info-grid">
+
+        <!-- Student Name (editable) -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Student Name</div>
+            <input class="field-input" id="input-name" type="text" placeholder="Enter your full name..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Student ID (editable) -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Student ID</div>
+            <input class="field-input" id="input-id" type="text" placeholder="Enter your student ID..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- University Name -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">University</div>
+            <input class="field-input" id="input-university" type="text" placeholder="Enter university name..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Faculty Name -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Faculty</div>
+            <input class="field-input" id="input-faculty" type="text" placeholder="Enter faculty name..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Department Name -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Department</div>
+            <input class="field-input" id="input-department" type="text" placeholder="Enter department name..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Course Name -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Course</div>
+            <input class="field-input" id="input-course" type="text" placeholder="Enter course name..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Course Code -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Course Code</div>
+            <input class="field-input" id="input-course-code" type="text" placeholder="Enter course code..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Secure Access PIN -->
+        <div class="entry-info-item">
+          <div class="field-group">
+            <div class="field-label">Secure Access PIN</div>
+            <div class="bin-code-display">
+              <input class="field-input" id="input-pin" type="password" placeholder="••••••••" maxlength="15"
+                autocomplete="off">
+              <span class="bin-tag" style="background:var(--purple); color:white;">Required</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Launch Button -->
+      <div style="text-align:center;">
+        <button class="btn-primary" onclick="startEntry()"><span>Initialize Simulation →</span></button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="entry-footer">
+      <p>Faculty of Biotechnology · Prototyping Lab · MSA University</p>
+    </div>
+
+  </div>
   </div>
 
   <!-- Auth Loading Overlay -->
@@ -5967,27 +5968,27 @@
           const { db, startNewSession } = await import('./firebase_config.js?v=' + Date.now());
           const { doc: fbDoc, getDoc: fbGet, setDoc: fbSet } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
           const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-          
+
           // Ensure Firebase auth
           const fbAuth = getAuth();
           if (!fbAuth.currentUser) await signInAnonymously(fbAuth);
-          
+
           const devUid = 'dev_admin';
           const now = new Date().toISOString();
           const devDocRef = fbDoc(db, 'users', devUid);
           const devSnap = await fbGet(devDocRef);
-          
+
           let devTrialId = `trial_${Date.now()}_dev`;
-          
+
           // 7 empty case slots for each trial
-          const CASE_NAMES = ["MEMBRANE TRANSPORT","OSMOSIS & TONICITY","ACTIVE TRANSPORT & ENERGY","BIOELECTRICITY & AP","RADIATION & SHIELDING","LIPOSOME DELIVERY","RADIATION & DNA DAMAGE"];
+          const CASE_NAMES = ["MEMBRANE TRANSPORT", "OSMOSIS & TONICITY", "ACTIVE TRANSPORT & ENERGY", "BIOELECTRICITY & AP", "RADIATION & SHIELDING", "LIPOSOME DELIVERY", "RADIATION & DNA DAMAGE"];
           const emptyCases = CASE_NAMES.map((name, i) => ({
             caseId: i, caseName: name, startedAt: null, exitTime: null,
             duration: 0, optimalTime: 0, stabilityScore: 0, actionsTaken: 0,
             efficiencyPenalty: 0, totalScore: 0, grade: "", gradeLabel: "",
             completed: false, completedAt: null
           }));
-          
+
           if (devSnap.exists()) {
             // Returning dev — add new trial to existing history
             statusText.textContent = "Starting Dev Session...";
@@ -6040,7 +6041,7 @@
             });
             state.totalTrials = 1;
           }
-          
+
           state.userUid = devUid;
           state.currentTrialId = devTrialId;
           state.userName = nm || 'Developer';
