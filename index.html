@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v4.4 - Removed parameter descriptions -->
+<!-- v4.5 - Fixed Boron button error -->
 <html lang="en">
 
 <head>
@@ -10448,6 +10448,24 @@
     // ─────────────────────────────────────────────
     // CASE 6: LIPOSOME DRUG DELIVERY — Action Functions
     // ─────────────────────────────────────────────
+    function selectLipoPayload(type) {
+      state._lipoPayload = type;
+      // Highlight selected button
+      document.querySelectorAll('.lipo-select-btn').forEach(btn => {
+        btn.style.background = '';
+        btn.style.color = '';
+      });
+      const btns = document.querySelectorAll('.lipo-select-btn');
+      btns.forEach(btn => {
+        if ((type === 'boron' && btn.textContent.includes('Boron')) ||
+            (type === 'aox' && btn.textContent.includes('Antioxidant'))) {
+          btn.style.background = '#059669';
+          btn.style.color = '#fff';
+        }
+      });
+      addLog(`🧬 Payload selected: ${type === 'boron' ? 'Boron-10 (BNCT)' : 'Antioxidant Shield'}`, 'info');
+    }
+
     function deliverLiposome() {
       if (!state.running) return;
       if (state.atp < 5) { addLog('Insufficient ATP for delivery.', 'danger'); return; }
