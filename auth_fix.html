@@ -2964,7 +2964,7 @@
       _locationData: { ip: '', country: '', city: '', coords: null },
       _sliderAdjustments: 0, _diagnosisRT: 0, _diagnosisStartTime: 0,
       // === Original State ===
-      running: false, stage: 0, recoveryMode: false, time: 60,
+      running: false, stage: 0, recoveryMode: false, time: 90,
       membrane: 80, atp: 90, ion: 70, viability: 85,
       params: { perm: 50, na: 50, k: 50, ca: 30, ef: 0, pd: 0, temp: 37, ph: 7.4, tp: 60 },
       shield: false, score: { stability: 0, efficiency: 100, actions: 0, total: 0 },
@@ -3054,7 +3054,7 @@
         obj: 'Identify and restore correct transport mechanism', risk: 'Transport Failure / Cell Starvation',
         stressor: 'membrane',
         transTitle: 'Transport Mechanisms Restored', transBody: 'Selective permeability restored. The cell can now effectively control its internal environment.',
-        duration: 60, casePrimary: '#007a55', caseSecondary: '#7c3aed', cssClass: 'case-tint-membrane',
+        duration: 90, casePrimary: '#007a55', caseSecondary: '#7c3aed', cssClass: 'case-tint-membrane',
         statusLabels: ['Bilayer Fluidity', 'ATP Energy', 'Lipid Order', 'Viability'],
         legendItems: [
           { color: '#ffffff', label: 'Oxygen (O₂)', desc: 'crosses freely through bilayer — no channel needed' },
@@ -3072,7 +3072,7 @@
         stressor: 'osmotic',
         transTitle: 'Osmotic Balance Restored', transBody: 'Cell volume stabilized. Osmotic pressure equalized.',
         bridgeText: 'The Na⁺/K⁺ gradient you just managed is the exact gradient that powers the action potential in the next stage.',
-        duration: 60, casePrimary: '#0077cc', caseSecondary: '#00a878', cssClass: 'case-tint-osmotic',
+        duration: 90, casePrimary: '#0077cc', caseSecondary: '#00a878', cssClass: 'case-tint-osmotic',
         statusLabels: ['Cell Volume', 'ATP Energy', 'Osmotic Balance', 'Viability'],
         legendItems: [
           { color: '#003399', label: 'Water (H₂O)', desc: 'Osmotic flux — watch direction' },
@@ -3089,7 +3089,7 @@
         stressor: 'activetransport',
         transTitle: 'Active Transport Restored', transBody: 'Pump function restored. ATP supply stabilized. Concentration gradients maintained.',
         bridgeText: 'The Na⁺/K⁺ gradient you just managed is the exact gradient that powers the action potential in the next stage.',
-        duration: 60, casePrimary: '#92400e', caseSecondary: '#d97706', cssClass: 'case-tint-diffusion',
+        duration: 90, casePrimary: '#92400e', caseSecondary: '#d97706', cssClass: 'case-tint-diffusion',
         statusLabels: ['Pump Activity', 'ATP Energy', 'Gradient Strength', 'Viability'],
         legendItems: [
           { color: '#d97706', label: 'ATP molecules', desc: 'Fuel for active transport pumps' },
@@ -3106,7 +3106,7 @@
         stressor: 'actionpotential',
         transTitle: 'Neurological Stability Restored', transBody: 'Action potential rhythm normalized. Synaptic gating restored. Excellent clinical reasoning.',
         bridgeText: 'Now that you’ve mastered bioelectricity, face the challenge of <em>radiation exposure</em> and oxidative stress.',
-        duration: 60, casePrimary: '#2563eb', caseSecondary: '#f97316', cssClass: 'case-tint-actionpotential',
+        duration: 90, casePrimary: '#2563eb', caseSecondary: '#f97316', cssClass: 'case-tint-actionpotential',
         statusLabels: ['Membrane Vm', 'ATP Energy', 'Signal Quality', 'Viability'],
         legendItems: [
           { color: '#FF1493', label: 'Sodium (Na⁺) Influx', desc: 'Depolarization driver' },
@@ -3123,7 +3123,7 @@
         stressor: 'radiation',
         transTitle: 'Radiation Shielding Successful', transBody: 'Tissue protected. Shield placement optimized. Radiation exposure minimized.',
         bridgeText: 'You managed radiation shielding — now learn how <em>liposomes</em> can deliver payloads to enhance targeted therapy.',
-        duration: 60, casePrimary: '#ffb300', caseSecondary: '#7c3aed', cssClass: 'case-tint-radiation',
+        duration: 90, casePrimary: '#ffb300', caseSecondary: '#7c3aed', cssClass: 'case-tint-radiation',
         statusLabels: ['ROS Level', 'ATP Energy', 'DNA Damage', 'Viability'],
         legendItems: [
           { color: '#f59e0b', label: 'Alpha (α) radiation', desc: 'Short range — paper blocks' },
@@ -3141,7 +3141,7 @@
         stressor: 'liposome',
         transTitle: 'Liposome Delivery Successful', transBody: 'Targeted delivery complete. Drug payload reached target cells with minimal collateral exposure.',
         bridgeText: 'You mastered liposome delivery — now face the challenge of <em>radiation-induced DNA damage</em> and free radical cascades.',
-        duration: 60, casePrimary: '#059669', caseSecondary: '#f59e0b', cssClass: 'case-tint-liposome',
+        duration: 90, casePrimary: '#059669', caseSecondary: '#f59e0b', cssClass: 'case-tint-liposome',
         statusLabels: ['Delivery %', 'ATP Energy', 'Target Coverage', 'Viability'],
         legendItems: [
           { color: '#059669', label: 'Liposomes', desc: 'Targeted delivery vehicles' },
@@ -5386,7 +5386,7 @@
       state._waveformReadTime = 0; state._sliderHistory = {};
       state._precisionAccum = 0; state._precisionTicks = 0;
       state.membrane = 80; state.atp = 90; state.ion = 70; state.viability = 85;
-      state.time = 60; state.score.actions = 0;
+      state.time = 90; state.score.actions = 0;
       // Reset therapy state
       state._tumorHP = 100; state._healthyCellHP = 100; state._therapyRadType = 'gamma';
       state._therapyShieldType = 'none'; state._therapyBeam = null; state._therapyShieldPos = null;
@@ -5667,7 +5667,7 @@
       }
 
       state.running = true;
-      state.time = STAGES[state.stage]?.duration || 60;
+      state.time = STAGES[state.stage]?.duration || 90;
       state._startTime = Date.now();
       // Case 00 Normal phase (stage 0, phase 1) should be UNLOCKED (phase 3). 
       // All other clinical cases start in Observation (phase 1).
@@ -6159,7 +6159,7 @@
       // ═══ NEW: Mid-case event at 0:30 remaining (30 seconds left) ═══
       // Case 7 (dnadamage) is a special extended case — no mid-case alert
       const currentStressor = STAGES[state.stage]?.stressor;
-      if (!state.midCaseEventFired && state.time <= 30 && state.time > 0 && currentStressor !== 'dnadamage') {
+      if (!state.midCaseEventFired && state.time <= 45 && state.time > 0 && currentStressor !== 'dnadamage') {
         state.midCaseEventFired = true;
         fireMidCaseEvent();
       }
@@ -6397,7 +6397,7 @@
       const diagScore = state._diagnosisScore || 0;
 
       // 2. Stabilization Time (0-25) — seconds in optimal range / total treatment time
-      const treatmentDuration = STAGES[state.stage]?.duration || 60;
+      const treatmentDuration = STAGES[state.stage]?.duration || 90;
       const treatmentTime = Math.max(1, treatmentDuration - (state.time || 0));
       const stabRatio = (state.optimalSeconds || 0) / treatmentTime;
       const stabScore = Math.round(stabRatio * 25);
@@ -6968,7 +6968,7 @@
       clearInterval(state.simInterval); clearInterval(state.logInterval);
       setRecovery(false);
       const finalScore = calculateFinalScore();
-      const caseDuration = STAGES[state.stage]?.duration || 60;
+      const caseDuration = STAGES[state.stage]?.duration || 90;
       const elapsed = caseDuration - state.time;
       const mm = Math.floor(elapsed / 60), ss = elapsed % 60;
 
@@ -7161,8 +7161,8 @@
     function updateTimer() {
       const m = Math.floor(state.time / 60), s = state.time % 60;
       document.getElementById('timer-display').textContent = `${m}:${s.toString().padStart(2, '0')}`;
-      if (state.time <= 30) document.getElementById('timer-display').style.color = 'var(--danger)';
-      else if (state.time <= 60) document.getElementById('timer-display').style.color = 'var(--warn)';
+      if (state.time <= 45) document.getElementById('timer-display').style.color = 'var(--danger)';
+      else if (state.time <= 90) document.getElementById('timer-display').style.color = 'var(--warn)';
     }
 
     function updateStageDisplay() {
@@ -7201,7 +7201,7 @@
       clearInterval(state.simInterval); clearInterval(state.logInterval);
       warnedSet.clear();
       state = {
-        running: false, stage: 0, recoveryMode: false, time: 60,
+        running: false, stage: 0, recoveryMode: false, time: 90,
         membrane: 80, atp: 90, ion: 70, viability: 85,
         params: { perm: 50, na: 50, k: 50, ca: 30, ef: 0, pd: 0, temp: 37, ph: 7.4, tp: 60 },
         shield: false, score: { stability: 0, efficiency: 100, actions: 0, total: 0 },
